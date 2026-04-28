@@ -1,6 +1,24 @@
 import pygame
 import sys
 from objects.polygon_object import PolygonObject
+from test_render_config import (
+    GATO_MUNDO,
+    ALTURA_TELA,
+    CAMINHO_TEXTURA,
+    ESCALA_TEMPO,
+    AREA_VIEWPORT,
+    JANELA_MUNDO,
+    LARGURA_TELA,
+    POLIGONO_MUNDO,
+    POLIGONO_OBJ_PONTOS,
+    POLIGONO_OBJ_X,
+    POLIGONO_OBJ_Y,
+    TITULO_JANELA,
+    X_MAX_RECORTE,
+    X_MIN_RECORTE,
+    Y_MAX_RECORTE,
+    Y_MIN_RECORTE,
+)
 
 # IMPORTS DO SEU RENDER
 from render.pixel import setPixel
@@ -13,48 +31,32 @@ from render.elipse import desenhar_elipse
 from render.textura import scanline_texture
 from render.clipping import cohen_sutherland, clip_polygon_sutherland_hodgman
 from render.viewport import transformar_pontos
-textura = pygame.image.load("textura.jpg")
-xmin, ymin = 100, 100
-xmax, ymax = 700, 500
+textura = pygame.image.load(CAMINHO_TEXTURA)
+xmin, ymin = X_MIN_RECORTE, Y_MIN_RECORTE
+xmax, ymax = X_MAX_RECORTE, Y_MAX_RECORTE
 
 # janela no mundo
-window = (0, 0, 1000, 1000)
+window = JANELA_MUNDO
 
 # viewport na tela
-viewport = (100, 100, 700, 500)
+viewport = AREA_VIEWPORT
 
-poligono_mundo = [
-    (200, 200),
-    (800, 300),
-    (700, 800),
-    (300, 700)
-]
+poligono_mundo = POLIGONO_MUNDO
 
 # "gato" no mundo: usa a textura.jpg e sera recortado pela janela antes de ir para viewport
-gato_mundo = [
-    (-120, 100),
-    (560, 120),
-    (620, 930),
-    (-160, 880)
-]
+gato_mundo = GATO_MUNDO
 
-poligono_obj_teste = PolygonObject([
-    (0, 0),
-    (120, 30),
-    (90, 140),
-    (10, 110)
-])
-poligono_obj_teste.x = 350
-poligono_obj_teste.y = 380
+poligono_obj_teste = PolygonObject(POLIGONO_OBJ_PONTOS)
+poligono_obj_teste.x = POLIGONO_OBJ_X
+poligono_obj_teste.y = POLIGONO_OBJ_Y
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("TESTE DO RENDER")
+screen = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
+pygame.display.set_caption(TITULO_JANELA)
 
 clock = pygame.time.Clock()
-time_scale = 4.0
+time_scale = ESCALA_TEMPO
 
 # Controle para flood fill rodar só uma vez
 flood_executado = False

@@ -1,12 +1,17 @@
 from pathlib import Path
 
 import pygame
+from configs.audio_config import (
+    DESVANECIMENTO_MS_PADRAO,
+    EXTENSOES_SUPORTADAS,
+    PASTA_MUSICA_PADRAO,
+    VOLUME_MUSICA_PADRAO,
+)
 
-SUPPORTED_EXTENSIONS = (".mp3", ".ogg", ".wav")
 _current_music: Path | None = None
 
 
-def _find_music_file(music_dir: str = "musica") -> Path:
+def _find_music_file(music_dir: str = PASTA_MUSICA_PADRAO) -> Path:
     base_dir = Path(__file__).resolve().parent
     folder = base_dir / music_dir
 
@@ -16,7 +21,7 @@ def _find_music_file(music_dir: str = "musica") -> Path:
     candidates = sorted(
         file_path
         for file_path in folder.iterdir()
-        if file_path.is_file() and file_path.suffix.lower() in SUPPORTED_EXTENSIONS
+        if file_path.is_file() and file_path.suffix.lower() in EXTENSOES_SUPORTADAS
     )
 
     if not candidates:
@@ -28,7 +33,7 @@ def _find_music_file(music_dir: str = "musica") -> Path:
     return candidates[0]
 
 
-def _find_music_by_name(file_name: str, music_dir: str = "musica") -> Path:
+def _find_music_by_name(file_name: str, music_dir: str = PASTA_MUSICA_PADRAO) -> Path:
     base_dir = Path(__file__).resolve().parent
     folder = base_dir / music_dir
     candidate = folder / file_name
@@ -36,7 +41,7 @@ def _find_music_by_name(file_name: str, music_dir: str = "musica") -> Path:
     if not candidate.exists() or not candidate.is_file():
         raise FileNotFoundError(f"Arquivo de musica nao encontrado: {candidate}")
 
-    if candidate.suffix.lower() not in SUPPORTED_EXTENSIONS:
+    if candidate.suffix.lower() not in EXTENSOES_SUPORTADAS:
         raise ValueError(
             f"Formato nao suportado para {candidate.name}. "
             "Use mp3, ogg ou wav."
@@ -45,7 +50,7 @@ def _find_music_by_name(file_name: str, music_dir: str = "musica") -> Path:
     return candidate
 
 
-def _play_path(music_path: Path, volume: float = 0.5, fade_ms: int = 300) -> Path:
+def _play_path(music_path: Path, volume: float = VOLUME_MUSICA_PADRAO, fade_ms: int = DESVANECIMENTO_MS_PADRAO) -> Path:
     global _current_music
 
     if not pygame.mixer.get_init():
@@ -66,16 +71,16 @@ def _play_path(music_path: Path, volume: float = 0.5, fade_ms: int = 300) -> Pat
     return music_path
 
 
-def iniciar_musica_loop(music_dir: str = "musica", volume: float = 0.5) -> Path:
+def iniciar_musica_loop(music_dir: str = PASTA_MUSICA_PADRAO, volume: float = VOLUME_MUSICA_PADRAO) -> Path:
     music_path = _find_music_file(music_dir)
     return _play_path(music_path, volume=volume)
 
 
 def trocar_musica(
     file_name: str,
-    music_dir: str = "musica",
-    volume: float = 0.5,
-    fade_ms: int = 300,
+    music_dir: str = PASTA_MUSICA_PADRAO,
+    volume: float = VOLUME_MUSICA_PADRAO,
+    fade_ms: int = DESVANECIMENTO_MS_PADRAO,
 ) -> Path:
     music_path = _find_music_by_name(file_name, music_dir)
     return _play_path(music_path, volume=volume, fade_ms=fade_ms)
@@ -84,9 +89,9 @@ def trocar_musica(
 def trocar_musica_se_existir(
     file_name: str,
     fallback_to_first: bool = True,
-    music_dir: str = "musica",
-    volume: float = 0.5,
-    fade_ms: int = 300,
+    music_dir: str = PASTA_MUSICA_PADRAO,
+    volume: float = VOLUME_MUSICA_PADRAO,
+    fade_ms: int = DESVANECIMENTO_MS_PADRAO,
 ) -> Path:
     try:
         return trocar_musica(

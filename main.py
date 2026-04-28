@@ -1,17 +1,23 @@
-import pygame
-from sprites import *
-from config import *
-import sys
+import runpy
+from pathlib import Path
 
-class Game:
-    def __init__(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode(( WIN_WIDTH, WIN_HEIGHT))
-        self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font('Arial', 32)
-        self.running = True
-    
-    def new(self):
-        self.playing = True
+from menu import menu_principal
 
-        self.all_sprites
+
+def executar_jogo():
+    caminho_jogo = Path(__file__).with_name("test_game.py")
+    try:
+        runpy.run_path(str(caminho_jogo), run_name="__main__")
+    except SystemExit:
+        # test_game.py chama sys.exit() ao finalizar; voltamos ao menu.
+        pass
+
+
+def main():
+    acao = menu_principal()
+    if acao == "jogar":
+        executar_jogo()
+
+
+if __name__ == "__main__":
+    main()
