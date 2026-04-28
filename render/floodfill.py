@@ -1,3 +1,6 @@
+from render.pixel import setPixel
+
+
 def flood_fill(surface, x, y, new_color, border_color):
     # A pilha guarda os pixels que ainda precisam ser analisados.
     stack = [(x, y)]
@@ -18,7 +21,7 @@ def flood_fill(surface, x, y, new_color, border_color):
             continue
 
         # Pinta o pixel atual com a nova cor.
-        surface.set_at((x, y), new_color)
+        setPixel(surface, x, y, new_color)
 
         # Adiciona os 4 vizinhos para continuar o preenchimento.
         stack.append((x+1, y))

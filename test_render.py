@@ -1,5 +1,6 @@
 import pygame
 import sys
+from objects.polygon_object import PolygonObject
 
 # IMPORTS DO SEU RENDER
 from render.pixel import setPixel
@@ -10,7 +11,7 @@ from render.floodfill import flood_fill
 from render.circulo import desenhar_circulo
 from render.elipse import desenhar_elipse
 from render.textura import scanline_texture
-from render.clipping import cohen_sutherland
+from render.clipping import cohen_sutherland, clip_polygon_sutherland_hodgman
 from render.viewport import transformar_pontos
 textura = pygame.image.load("textura.jpg")
 xmin, ymin = 100, 100
@@ -29,6 +30,23 @@ poligono_mundo = [
     (300, 700)
 ]
 
+# "gato" no mundo: usa a textura.jpg e sera recortado pela janela antes de ir para viewport
+gato_mundo = [
+    (-120, 100),
+    (560, 120),
+    (620, 930),
+    (-160, 880)
+]
+
+poligono_obj_teste = PolygonObject([
+    (0, 0),
+    (120, 30),
+    (90, 140),
+    (10, 110)
+])
+poligono_obj_teste.x = 350
+poligono_obj_teste.y = 380
+
 pygame.init()
 
 WIDTH, HEIGHT = 800, 600
@@ -36,6 +54,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("TESTE DO RENDER")
 
 clock = pygame.time.Clock()
+time_scale = 4.0
 
 # Controle para flood fill rodar só uma vez
 flood_executado = False
@@ -45,6 +64,8 @@ flood_executado = False
 # =========================
 running = True
 while running:
+    dt = clock.tick(60) / 1000.0
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -140,16 +161,29 @@ while running:
     # transformar pontos
     poligono_tela = transformar_pontos(poligono_mundo, window, viewport)
 
+    # clipping no mundo -> transformacao para viewport -> textura na tela
+    gato_clip_mundo = clip_polygon_sutherland_hodgman(gato_mundo, *window)
+    if len(gato_clip_mundo) >= 3:
+        gato_tela = transformar_pontos(gato_clip_mundo, window, viewport)
+        scanline_texture(screen, gato_tela, textura)
+        desenhar_poligono(screen, gato_tela, (255, 255, 255))
+
     # desenhar
     desenhar_poligono(screen, poligono_tela, (255,255,0))
     scanline_fill(screen, poligono_tela, (100,100,255))
+
+    # =========================
+    # 9. POLYGON OBJECT (ANIMADO)
+    # =========================
+    poligono_obj_teste.update(dt * time_scale)
+    poligono_obj_teste.draw(screen)
+
     # Executa flood fill só uma vez
     if not flood_executado:
         flood_fill(screen, 200, 450, cor_fill, cor_borda)
         flood_executado = True
 
     pygame.display.flip()
-    clock.tick(60)
 
 pygame.quit()
 sys.exit()
