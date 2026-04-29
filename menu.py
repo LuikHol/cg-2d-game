@@ -127,9 +127,9 @@ def obter_animacoes_menu():
         return ANIMACOES_MENU
 
     altura_alvo = 190
-    faixa_baixo = Path("texturas/menino1.png")
-    faixa_lado = Path("texturas/menino2.png")
-    faixa_cima = Path("texturas/menino3.png")
+    faixa_baixo = Path("texturas/personagem/menino1.png")
+    faixa_lado = Path("texturas/personagem/menino2.png")
+    faixa_cima = Path("texturas/personagem/menino3.png")
 
     if faixa_baixo.exists() and faixa_lado.exists() and faixa_cima.exists():
         quadros_baixo = carregar_quadros_da_faixa(faixa_baixo, altura_alvo)

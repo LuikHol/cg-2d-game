@@ -20,7 +20,7 @@ class ColliderComponent:
         return pygame.Rect(left, top, int(round(self.width)), int(round(self.height)))
 
 
-class StaticColliderComponent:
+class ComponenteColisaoEstatica:
     def __init__(self, x, y, width, height):
         self.rect = pygame.Rect(int(x), int(y), int(width), int(height))
 

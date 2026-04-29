@@ -1,9 +1,7 @@
 ﻿import pygame
 import sys
-import math
-from pathlib import Path
 from configs.game_config import (
-    ALFA_ESCURIDAO_AMBIENTE,
+
     ALTURA_MUNDO,
     ALTURA_TELA,
     CAMINHO_TEXTURA,
@@ -21,8 +19,8 @@ from configs.game_config import (
 from objects.player_object import PlayerObject
 from objects.interaction_manager import InteractionManager
 from objects.room_manager import RoomManager
-from world.rooms import build_rooms
-from world.decoracoes import desenhar_coroa_estatua
+from world.rooms import construir_salas
+from objects.decoracoes import desenhar_coroa_estatua
 from render.sala_renderer import desenhar_sala, desenhar_foreground
 from render.iluminacao import desenhar_iluminacao
 from render.viewport import transformar_pontos, world_to_viewport
@@ -43,7 +41,7 @@ except FileNotFoundError:
 
 iniciar_musica_loop(volume=VOLUME_MUSICA)
 
-rooms = build_rooms()
+rooms = construir_salas()
 room_manager = RoomManager(rooms, SALA_INICIAL)
 player = PlayerObject(JOGADOR_INICIO_X, JOGADOR_INICIO_Y)
 inventario = Inventario()

@@ -1,10 +1,10 @@
 import pygame
-from objects.components import StaticColliderComponent
-from objects.interactable_object import InteractableObject
+from objects.components import ComponenteColisaoEstatica
+from objects.interactable_object import ObjetoInterativo
 
 
-def build_rooms():
-    colisao_estatica = StaticColliderComponent
+def construir_salas():
+    colisao_estatica = ComponenteColisaoEstatica
     sala1_x_min = 18
     sala1_x_max = 982
     sala1_y_min = 225
@@ -13,7 +13,7 @@ def build_rooms():
     porta_sala1_x_max = 540
     porta_sala1_y = sala1_y_max
 
-    def poligono_chao(pontos, cor_preenchimento, cor_borda):
+    def poligono_de_chao(pontos, cor_preenchimento, cor_borda):
         return {
             "polygon": pontos,
             "fill_color": cor_preenchimento,
@@ -21,11 +21,11 @@ def build_rooms():
             "skip_on_background": True,
         }
 
-    bilhete_sala1 = [(250, 520), (330, 520), (330, 550), (250, 550)]
+    bilhete_sala1 = [(250, 560), (330, 560), (330, 590), (250, 590)]
     placa_corredor = [(470, 355), (530, 355), (530, 395), (470, 395)]
     pergaminho_sala2 = [(700, 620), (790, 620), (790, 650), (700, 650)]
 
-    inter_bilhete = InteractableObject(
+    inter_bilhete = ObjetoInterativo(
         "bilhete",
         bilhete_sala1,
         (185, 175, 120),
@@ -37,19 +37,19 @@ def build_rooms():
         },
     )
 
-    inter_placa = InteractableObject(
+    inter_placa = ObjetoInterativo(
         "placa",
         placa_corredor,
-        (88, 110, 120),
+        (90, 110, 120),
         (110, 145, 160),
         {
             "type": "message",
-            "text": "corredor da ala leste",
+            "text": "aaaaaa sorroco",
             "duration": 2.8,
         },
     )
 
-    inter_pergaminho = InteractableObject(
+    inter_pergaminho = ObjetoInterativo(
         "pergaminho",
         pergaminho_sala2,
         (170, 155, 110),
@@ -68,8 +68,8 @@ def build_rooms():
     )
 
     # Coroa vermelha (pickup) sobre a estatua gata
-    coroa_pickup = [(280, 225), (380, 225), (380, 280), (280, 280)]
-    inter_coroa = InteractableObject(
+    coroa_pickup = [(255, 260), (390, 260), (325, 310), (255, 310)]
+    inter_coroa = ObjetoInterativo(
         "coroa_vermelha",
         coroa_pickup,
         None,
@@ -84,15 +84,15 @@ def build_rooms():
 
     sala1 = {
         "nome": "sala_1",
-        "background_texture": "world/quarto.png",
+        "background_texture": "texturas/cenario/quarto_menino/quarto.png",
         "background_zoom": 1.0,
         "poligonos": [
-            poligono_chao(
+            poligono_de_chao(
                 [(sala1_x_min, sala1_y_min), (sala1_x_max, sala1_y_min), (sala1_x_max, sala1_y_max), (sala1_x_min, sala1_y_max)],
                 (120, 80, 40),
                 (100, 65, 30),
             ),
-            inter_bilhete.as_draw_item(),
+            inter_bilhete.como_item_desenhavel(),
         ],
         "portas_visuais": [
             # Porta invisivel: apenas vao entre as paredes + trigger de transicao.
@@ -146,11 +146,11 @@ def build_rooms():
         "nome": "corredor",
         "background_texture": "texturas/cenario/chaointeiro.png",
         "poligonos": [
-            poligono_chao([(0, 250), (1000, 250), (1000, 500), (0, 500)], (90, 88, 85), (120, 118, 112)),
+            poligono_de_chao([(0, 250), (1000, 250), (1000, 500), (0, 500)], (90, 88, 85), (120, 118, 112)),
             ([(0, 0), (460, 0), (460, 180), (0, 180)], (45, 48, 58), (60, 64, 76)),
             ([(540, 0), (1000, 0), (1000, 180), (540, 180)], (45, 48, 58), (60, 64, 76)),
             ([(0, 500), (1000, 500), (1000, 750), (0, 750)], (45, 48, 58), (60, 64, 76)),
-            inter_placa.as_draw_item(),
+            inter_placa.como_item_desenhavel(),
         ],
         "portas_visuais": [
             # Entrada para sala_1 invisivel: mantem somente abertura geometrica.
@@ -183,10 +183,10 @@ def build_rooms():
         "nome": "sala_2",
         "background_texture": "texturas/cenario/chaointeiro.png",
         "poligonos": [
-            poligono_chao([(0, 120), (1000, 120), (1000, 750), (0, 750)], (105, 78, 58), (90, 62, 44)),
+            poligono_de_chao([(0, 120), (1000, 120), (1000, 750), (0, 750)], (105, 78, 58), (90, 62, 44)),
             ([(0, 0), (1000, 0), (1000, 120), (0, 120)], (74, 70, 92), (98, 94, 118)),
             ([(620, 420), (760, 420), (760, 560), (620, 560)], (52, 55, 72), (75, 80, 100)),
-            inter_pergaminho.as_draw_item(),
+            inter_pergaminho.como_item_desenhavel(),
         ],
         "portas_visuais": [
             ([(0, 320), (16, 320), (16, 440), (0, 440)], (170, 125, 70), (220, 180, 110)),

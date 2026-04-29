@@ -30,9 +30,9 @@ class PlayerObject:
         altura_alvo = max(16, int(self.tamanho * 2.5 * self.escala_sprite))
 
         # Novo formato: 3 arquivos separados por direcao (4 frames cada).
-        faixa_baixo = Path("texturas/menino1.png")
-        faixa_lado = Path("texturas/menino2.png")
-        faixa_cima = Path("texturas/menino3.png")
+        faixa_baixo = Path("texturas/personagem/menino1.png")
+        faixa_lado = Path("texturas/personagem/menino2.png")
+        faixa_cima = Path("texturas/personagem/menino3.png")
         if faixa_baixo.exists() and faixa_lado.exists() and faixa_cima.exists():
             quadros_baixo = self._carregar_quadros_da_faixa(faixa_baixo, altura_alvo)
             quadros_direita = self._carregar_quadros_da_faixa(faixa_lado, altura_alvo)

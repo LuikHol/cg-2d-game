@@ -1,3 +1,4 @@
+import math
 import pygame
 from render.poligono import desenhar_poligono
 from render.scanline import scanline_fill
@@ -7,10 +8,10 @@ from render.textura import scanline_texture
 
 class InteractionManager:
     def __init__(self, paper_texture=None, inventario=None):
-        self.fonte_prompt = pygame.font.SysFont(None, 28)
-        self.fonte_mundo = pygame.font.SysFont(None, 34)
-        self.fonte_titulo_papel = pygame.font.SysFont(None, 38)
-        self.fonte_corpo_papel = pygame.font.SysFont(None, 30)
+        self.fonte_prompt = pygame.font.SysFont("timesnewroman", 20)
+        self.fonte_mundo = pygame.font.SysFont("timesnewroman", 20)
+        self.fonte_titulo_papel = pygame.font.SysFont("timesnewroman", 38)
+        self.fonte_corpo_papel = pygame.font.SysFont("timesnewroman", 20)
         self.textura_papel = paper_texture
         self.inventario = inventario
 
@@ -20,6 +21,8 @@ class InteractionManager:
         self.tempo_mensagem_mundo = 0.0
 
         self.papel_aberto = None
+        # Lista de interagiveis visiveis atualizada a cada frame para desenhar as estrelas.
+        self._interagiveis_visiveis = []
         self._papel_estava_pressionado = False
         self._papel_pode_fechar = False
 
@@ -53,6 +56,8 @@ class InteractionManager:
             return
 
         self.alvo_prompt = None
+        # Guarda os interagiveis disponiveis (nao coletados) para desenhar as estrelas.
+        self._interagiveis_visiveis = []
 
         for objeto in interactables:
             componente = objeto.component
@@ -61,6 +66,7 @@ class InteractionManager:
                 nome_item = objeto.component.action.get("item")
                 if nome_item and self.inventario.tem(nome_item):
                     continue
+            self._interagiveis_visiveis.append(objeto)
             if componente.can_interact(actor_rect):
                 self.alvo_prompt = objeto
 
@@ -100,24 +106,48 @@ class InteractionManager:
         self.pos_mensagem_mundo = obj.get_center()
         self.tempo_mensagem_mundo = float(action.get("duration", 2.6))
 
+    def _desenhar_estrela(self, surface, cx, cy, raio_externo, raio_interno, num_pontas, cor):
+        """Desenha uma estrela preenchida usando o scanline_fill existente."""
+        pontos = []
+        for i in range(num_pontas * 2):
+            ang = math.pi / num_pontas * i - math.pi / 2
+            r = raio_externo if i % 2 == 0 else raio_interno
+            pontos.append((cx + r * math.cos(ang), cy + r * math.sin(ang)))
+        if len(pontos) >= 3:
+            scanline_fill(surface, pontos, cor)
+
     def draw(self, screen, camera, viewport):
-        if self.alvo_prompt:
-            px, py = self.alvo_prompt.get_center()
-            sx, sy = mundo_para_viewport(px, py - 34, camera, viewport)
-            superficie_prompt = self.fonte_prompt.render("E: interagir", True, (245, 230, 150))
-            fundo = superficie_prompt.get_rect(center=(sx, sy))
-            fundo.inflate_ip(14, 8)
-            self._desenhar_painel(screen, fundo, (20, 20, 20), (70, 70, 70))
-            screen.blit(superficie_prompt, superficie_prompt.get_rect(center=(sx, sy)))
+        # Desenha estrela pulsante acima de cada objeto interativo disponivel.
+        t = pygame.time.get_ticks() / 500.0
+        for objeto in self._interagiveis_visiveis:
+            wx, wy = objeto.get_center()
+            sx, sy = mundo_para_viewport(wx, wy, camera, viewport)
+            # Offset vertical acima do objeto + flutuacao suave.
+            sy -= 10 + int(4 * math.sin(t + wx * 0.05))
+            # Raio pulsa entre 4 e 7 pixels.
+            raio = 4 + 3 * (0.5 + 0.5 * math.sin(t * 2 + wx * 0.05))
+            alfa = int(180 + 75 * math.sin(t * 2))
+            cor = (255, 255, 255, alfa)
+            # Superficie temporaria para suportar alpha na estrela.
+            tam = int(raio * 2) + 4
+            surf_estrela = pygame.Surface((tam, tam), pygame.SRCALPHA)
+            self._desenhar_estrela(surf_estrela, tam // 2, tam // 2, raio, raio * 0.4, 4, cor)
+            screen.blit(surf_estrela, (sx - tam // 2, sy - tam // 2))
+
+        if self.alvo_prompt and not self.mensagem_mundo:
+            nome = self.alvo_prompt.name
+            superficie_prompt = self.fonte_prompt.render(f"[ E ] {nome}", True, (255, 255, 255))
+            largura_tela, altura_tela = screen.get_size()
+            cx = largura_tela // 2
+            cy = altura_tela - 48
+            screen.blit(superficie_prompt, superficie_prompt.get_rect(center=(cx, cy)))
 
         if self.mensagem_mundo:
-            wx, wy = self.pos_mensagem_mundo
-            sx, sy = mundo_para_viewport(wx, wy - 56, camera, viewport)
-            superficie_mensagem = self.fonte_mundo.render(self.mensagem_mundo, True, (250, 250, 250))
-            fundo = superficie_mensagem.get_rect(center=(sx, sy))
-            fundo.inflate_ip(18, 10)
-            self._desenhar_painel(screen, fundo, (10, 10, 10), (60, 60, 60))
-            screen.blit(superficie_mensagem, superficie_mensagem.get_rect(center=(sx, sy)))
+            largura_tela, altura_tela = screen.get_size()
+            cx = largura_tela // 2
+            cy = altura_tela - 48
+            superficie_mensagem = self.fonte_mundo.render(self.mensagem_mundo, True, (255, 255, 255))
+            screen.blit(superficie_mensagem, superficie_mensagem.get_rect(center=(cx, cy)))
 
         if self.papel_aberto:
             self._desenhar_sobreposicao_papel(screen)

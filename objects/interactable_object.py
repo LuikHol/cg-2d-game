@@ -1,7 +1,7 @@
 from objects.interaction_component import InteractableComponent
 
 
-class InteractableObject:
+class ObjetoInterativo:
     def __init__(self, name, polygon, fill_color, border_color, action, texture_key=None, show_border=True):
         self.name = name
         self.polygon = polygon
@@ -16,7 +16,7 @@ class InteractableObject:
         y = sum(p[1] for p in self.polygon) / len(self.polygon)
         return int(x), int(y)
 
-    def as_draw_item(self):
+    def como_item_desenhavel(self):
         return {
             "polygon": self.polygon,
             "fill_color": self.fill_color,

@@ -1,7 +1,7 @@
 import math
 from render.poligono import desenhar_poligono
 from render.scanline import scanline_fill
-from render.tranfomacoes import *
+from render.transformacoes import *
 
 class PolygonObject:
     def __init__(self, pontos):

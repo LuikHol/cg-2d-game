@@ -15,6 +15,7 @@ _ambient_cache = {}
 
 
 def gerar_pontos_elipse(cx, cy, rx, ry, segmentos=56):
+    # Gera um polígono aproximando uma elipse para ser preenchida por scanline.
     pontos = []
     for i in range(segmentos):
         ang = (2.0 * math.pi * i) / segmentos
@@ -25,6 +26,7 @@ def gerar_pontos_elipse(cx, cy, rx, ry, segmentos=56):
 
 
 def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
+    # Usa cache por configuracao para evitar recriar a mesma mascara a cada frame.
     rx_base = int(radius_x if radius_x is not None else RAIO_LUZ_X)
     ry_base = int(radius_y if radius_y is not None else RAIO_LUZ_Y)
     steps_base = int(steps if steps is not None else PASSOS_LUZ)
@@ -38,6 +40,8 @@ def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
     cx = w // 2
     cy = h // 2
 
+    # Construcao em camadas: elipses concentricas do maior para o menor raio.
+    # O alpha removido segue curva quadratica para um falloff mais suave.
     for i in range(steps_base, 0, -1):
         t = i / steps_base
         remove_alpha = int(ALFA_ESCURIDAO_AMBIENTE * (1.0 - t) ** 2)
@@ -51,6 +55,7 @@ def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
 
 
 def obter_ambient_base(vw, vh):
+    # Superficie de escuridao base do viewport, tambem com cache por tamanho.
     key = (vw, vh, ALFA_ESCURIDAO_AMBIENTE)
     if key in _ambient_cache:
         return _ambient_cache[key]
@@ -61,12 +66,14 @@ def obter_ambient_base(vw, vh):
 
 
 def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
+    # Define area visivel atual onde a iluminacao sera aplicada.
     vx0, vy0, vx1, vy1 = viewport
     vw = vx1 - vx0
     vh = vy1 - vy0
     if vw <= 0 or vh <= 0:
         return
 
+    # Luz principal acompanha o player (com pequeno offset no eixo Y).
     px, py = transformar_pontos([(player_obj.x, player_obj.y)], camera, viewport)[0]
     centros_luz = [
         {
@@ -77,6 +84,7 @@ def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
         }
     ]
 
+    # Luzes adicionais definidas no room_data (tochas, lampadas, etc.).
     for luz in room_data.get("lights", []):
         wx = luz.get("x")
         wy = luz.get("y")
@@ -92,6 +100,7 @@ def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
             }
         )
 
+    # Comeca com a sombra ambiente total e "recorta" as areas de luz com BLEND_RGBA_SUB.
     sombra = obter_ambient_base(vw, vh).copy()
     for luz in centros_luz:
         centro = luz["screen"]
@@ -102,4 +111,5 @@ def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
             special_flags=pygame.BLEND_RGBA_SUB,
         )
 
+    # Aplica a camada final de sombra sobre a superficie principal.
     surface.blit(sombra, (vx0, vy0))

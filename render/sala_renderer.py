@@ -35,8 +35,11 @@ def desenhar_item(surface, item, camera, viewport, textures, debug_clip=False):
             desenhar_poligono(surface, original_tela, (90, 90, 90))
 
         tela = transformar_pontos(clip, camera, viewport)
-        if texture_key and texture_key in textures:
-            scanline_texture(surface, tela, textures[texture_key])
+        # A chave pode existir com valor None (ex.: arquivo de textura ausente).
+        # Nesse caso, cai no preenchimento por cor para evitar crash.
+        textura_item = textures.get(texture_key) if texture_key else None
+        if textura_item is not None:
+            scanline_texture(surface, tela, textura_item)
         elif cor_fill is not None:
             scanline_fill(surface, tela, cor_fill)
 
