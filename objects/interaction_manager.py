@@ -6,71 +6,59 @@ from render.viewport import world_to_viewport as mundo_para_viewport
 from render.textura import scanline_texture
 
 
-class InteractionManager:
-    def __init__(self, paper_texture=None, inventario=None):
+class GerenciadorInteracao:
+    """Gerencia prompts, estrelas de interacao e leitura de papeis."""
+
+    def __init__(self, textura_papel=None, inventario=None):
+        # Fontes de UI
         self.fonte_prompt = pygame.font.SysFont("timesnewroman", 20)
         self.fonte_mundo = pygame.font.SysFont("timesnewroman", 20)
         self.fonte_titulo_papel = pygame.font.SysFont("timesnewroman", 38)
         self.fonte_corpo_papel = pygame.font.SysFont("timesnewroman", 20)
-        self.textura_papel = paper_texture
+
+        # Dependencias externas
+        self.textura_papel = textura_papel
         self.inventario = inventario
 
+        # Estado de mensagens e prompt
         self.alvo_prompt = None
         self.mensagem_mundo = ""
         self.pos_mensagem_mundo = (0, 0)
         self.tempo_mensagem_mundo = 0.0
 
+        # Estado de leitura de papel
         self.papel_aberto = None
-        # Lista de interagiveis visiveis atualizada a cada frame para desenhar as estrelas.
         self._interagiveis_visiveis = []
         self._papel_estava_pressionado = False
         self._papel_pode_fechar = False
 
-    def _retangulo_para_poligono(self, rect):
-        return [
-            (rect.left, rect.top),
-            (rect.right, rect.top),
-            (rect.right, rect.bottom),
-            (rect.left, rect.bottom),
-        ]
+    def atualizar(self, teclas, retangulo_ator, interagiveis, dt):
+        """Atualiza estado de interacoes no frame atual."""
+        papel_pressionado = bool(teclas[pygame.K_e])
 
-    def _desenhar_painel(self, screen, rect, cor_preenchimento, cor_borda=None):
-        painel = self._retangulo_para_poligono(rect)
-        scanline_fill(screen, painel, cor_preenchimento)
-        if cor_borda is not None:
-            desenhar_poligono(screen, painel, cor_borda)
-
-    def update(self, keys, actor_rect, interactables, dt):
-        papel_pressionado = bool(keys[pygame.K_e])
-
-        # Quando o papel estiver aberto, pausa novas interacoes e gerencia apenas fechamento.
-        if self.papel_aberto:
-            if not papel_pressionado:
-                self._papel_pode_fechar = True
-            elif papel_pressionado and not self._papel_estava_pressionado and self._papel_pode_fechar:
-                self.papel_aberto = None
-                self._papel_pode_fechar = False
-
-            self._papel_estava_pressionado = papel_pressionado
-            self.alvo_prompt = None
+        # Se um papel estiver aberto, so processa o fechamento para evitar
+        # interacoes concorrentes com outros objetos.
+        if self._atualizar_papel_aberto(papel_pressionado):
             return
 
         self.alvo_prompt = None
-        # Guarda os interagiveis disponiveis (nao coletados) para desenhar as estrelas.
         self._interagiveis_visiveis = []
 
-        for objeto in interactables:
+        for objeto in interagiveis:
             componente = objeto.component
-            # Nao mostra prompt para itens ja coletados
-            if objeto.component.action.get("type") == "pickup" and self.inventario:
-                nome_item = objeto.component.action.get("item")
+
+            # Nao exibe itens de pickup que ja foram coletados.
+            if componente.acao.get("type") == "pickup" and self.inventario:
+                nome_item = componente.acao.get("item")
                 if nome_item and self.inventario.tem(nome_item):
                     continue
+
             self._interagiveis_visiveis.append(objeto)
-            if componente.can_interact(actor_rect):
+
+            if componente.pode_interagir(retangulo_ator):
                 self.alvo_prompt = objeto
 
-            acionado, acao = componente.try_interact(keys, actor_rect)
+            acionado, acao = componente.tentar_interagir(teclas, retangulo_ator)
             if acionado and acao:
                 self._aplicar_acao(acao, objeto)
 
@@ -81,33 +69,52 @@ class InteractionManager:
 
         self._papel_estava_pressionado = papel_pressionado
 
-    def _aplicar_acao(self, action, obj):
-        tipo_acao = action.get("type", "message")
+    def _atualizar_papel_aberto(self, papel_pressionado):
+        """Atualiza estado de fechamento do papel.
+
+        Retorna True quando o fluxo principal de interacao deve ser interrompido.
+        """
+        if not self.papel_aberto:
+            return False
+
+        if not papel_pressionado:
+            self._papel_pode_fechar = True
+        elif papel_pressionado and not self._papel_estava_pressionado and self._papel_pode_fechar:
+            self.papel_aberto = None
+            self._papel_pode_fechar = False
+
+        self._papel_estava_pressionado = papel_pressionado
+        self.alvo_prompt = None
+        return True
+
+    def _aplicar_acao(self, acao, obj):
+        """Executa a acao configurada para o interagivel."""
+        tipo_acao = acao.get("type", "message")
 
         if tipo_acao == "pickup":
-            nome_item = action.get("item")
+            nome_item = acao.get("item")
             if nome_item and self.inventario:
                 self.inventario.adicionar(nome_item)
-            self.mensagem_mundo = action.get("mensagem", f"Pegou {nome_item}!")
+            self.mensagem_mundo = acao.get("mensagem", f"Pegou {nome_item}!")
             self.pos_mensagem_mundo = obj.get_center()
             self.tempo_mensagem_mundo = 2.5
             return
 
         if tipo_acao == "paper":
             self.papel_aberto = {
-                "title": action.get("title", "Anotacao"),
-                "lines": action.get("lines", []),
+                "title": acao.get("title", "Anotacao"),
+                "lines": acao.get("lines", []),
             }
             self._papel_pode_fechar = False
             return
 
-        # Default: mensagem no mapa, acima do objeto.
-        self.mensagem_mundo = action.get("text", "...")
+        # Fallback para mensagem comum acima do objeto.
+        self.mensagem_mundo = acao.get("text", "...")
         self.pos_mensagem_mundo = obj.get_center()
-        self.tempo_mensagem_mundo = float(action.get("duration", 2.6))
+        self.tempo_mensagem_mundo = float(acao.get("duration", 2.6))
 
     def _desenhar_estrela(self, surface, cx, cy, raio_externo, raio_interno, num_pontas, cor):
-        """Desenha uma estrela preenchida usando o scanline_fill existente."""
+        """Desenha uma estrela preenchida com scanline_fill."""
         pontos = []
         for i in range(num_pontas * 2):
             ang = math.pi / num_pontas * i - math.pi / 2
@@ -116,19 +123,24 @@ class InteractionManager:
         if len(pontos) >= 3:
             scanline_fill(surface, pontos, cor)
 
-    def draw(self, screen, camera, viewport):
-        # Desenha estrela pulsante acima de cada objeto interativo disponivel.
+    def desenhar(self, screen, camera, viewport):
+        """Renderiza estrelas, prompts, mensagens e sobreposicao de papel."""
+
+        # Estrelas pulsantes sobre interagiveis disponiveis.
         t = pygame.time.get_ticks() / 500.0
         for objeto in self._interagiveis_visiveis:
             wx, wy = objeto.get_center()
             sx, sy = mundo_para_viewport(wx, wy, camera, viewport)
-            # Offset vertical acima do objeto + flutuacao suave.
+
+            # Flutuacao vertical suave.
             sy -= 10 + int(4 * math.sin(t + wx * 0.05))
-            # Raio pulsa entre 4 e 7 pixels.
+
+            # Raio entre 4 e 7 px.
             raio = 4 + 3 * (0.5 + 0.5 * math.sin(t * 2 + wx * 0.05))
             alfa = int(180 + 75 * math.sin(t * 2))
             cor = (255, 255, 255, alfa)
-            # Superficie temporaria para suportar alpha na estrela.
+
+            # Surface temporaria para alpha da estrela.
             tam = int(raio * 2) + 4
             surf_estrela = pygame.Surface((tam, tam), pygame.SRCALPHA)
             self._desenhar_estrela(surf_estrela, tam // 2, tam // 2, raio, raio * 0.4, 4, cor)
@@ -155,7 +167,7 @@ class InteractionManager:
     def _desenhar_sobreposicao_papel(self, screen):
         largura_tela, altura_tela = screen.get_size()
 
-        # Folha em formato de poligono para reforçar o efeito de "papel".
+        # Folha em formato de poligono para reforcar visual de papel.
         papel = [
             (largura_tela // 2 - 240, altura_tela // 2 - 170),
             (largura_tela // 2 + 240, altura_tela // 2 - 150),
@@ -168,7 +180,7 @@ class InteractionManager:
         else:
             scanline_fill(screen, papel, (233, 222, 188))
 
-        # Borda discreta para evitar contorno forte/estranho.
+        # Borda discreta para evitar contorno agressivo.
         desenhar_poligono(screen, papel, (95, 82, 54))
 
         titulo = self.papel_aberto.get("title", "Documento")

@@ -1,7 +1,7 @@
 import pygame
 
 from objects.components import ComponenteColisaoEstatica
-from objects.interactable_object import ObjetoInterativo
+from objects.objeto_interagivel import ObjetoInterativo
 from world.salas.utils import poligono_de_chao, foreground_img
 
 

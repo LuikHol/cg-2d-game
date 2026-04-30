@@ -16,8 +16,8 @@ from configs.game_config import (
     TITULO_JANELA,
     VOLUME_MUSICA,
 )
-from objects.player_object import PlayerObject
-from objects.interaction_manager import InteractionManager
+from objects.player_object import ObjetoJogador
+from objects.interaction_manager import GerenciadorInteracao
 from objects.room_manager import RoomManager
 from world.rooms import construir_salas
 from objects.decoracoes import desenhar_coroa_estatua
@@ -27,6 +27,7 @@ from render.viewport import transformar_pontos, world_to_viewport
 from render.poligono import desenhar_poligono
 from objects.inventario import Inventario
 from musica_loop import iniciar_musica_loop, trocar_musica_se_existir, parar_musica
+from menu.inventory_hud import InventarioHUD
 
 # --- INICIALIZACAO ---------------------------------------------------------
 pygame.init()
@@ -43,9 +44,9 @@ iniciar_musica_loop(volume=VOLUME_MUSICA)
 
 rooms = construir_salas()
 room_manager = RoomManager(rooms, SALA_INICIAL)
-player = PlayerObject(JOGADOR_INICIO_X, JOGADOR_INICIO_Y)
+player = ObjetoJogador(JOGADOR_INICIO_X, JOGADOR_INICIO_Y)
 inventario = Inventario()
-interaction_manager = InteractionManager(paper_texture=textura, inventario=inventario)
+gerenciador_interacao = GerenciadorInteracao(textura_papel=textura, inventario=inventario)
 
 camera   = (0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
 viewport = (MARGEM_VIEWPORT, MARGEM_VIEWPORT, LARGURA_TELA - MARGEM_VIEWPORT, ALTURA_TELA - MARGEM_VIEWPORT)
@@ -132,6 +133,7 @@ def desenhar_hud(surface, fonte, room_manager, player, debug_clip, debug_light,
 
 # --- LOOP PRINCIPAL --------------------------------------------------------
 fonte = pygame.font.SysFont(None, TAMANHO_FONTE_HUD)
+inventario_hud = InventarioHUD(fonte)
 dt = 0.0
 running = True
 last_input_dir = "right"
@@ -168,6 +170,8 @@ while running:
                 ultimo_snippet = ""
             elif event.key == pygame.K_l:
                 debug_light = not debug_light
+            elif event.key == pygame.K_r:
+                inventario_hud.alternar()
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and debug_pos:
             mouse_world = tela_para_mundo(event.pos, camera, viewport)
@@ -200,7 +204,7 @@ while running:
 
     dados_room = room_manager.get_room()
     player_rect = player.collider.get_rect_from_center(player.x, player.y)
-    interaction_manager.update(keys, player_rect, dados_room.get("interactables", []), dt)
+    gerenciador_interacao.atualizar(keys, player_rect, dados_room.get("interactables", []), dt)
 
     # -- Render -------------------------------------------------------------
     screen.fill((10, 10, 10))
@@ -215,9 +219,11 @@ while running:
     if room_manager.current_room == "sala_1":
         desenhar_coroa_estatua(screen, camera, viewport, inventario)
 
+    gerenciador_interacao.desenhar(screen, camera, viewport)
     desenhar_hud(screen, fonte, room_manager, player, debug_clip, debug_light,
                  debug_pos, pick_inicio, ultimo_snippet, camera, viewport, inventario)
-    interaction_manager.draw(screen, camera, viewport)
+    inventario_hud.desenhar_hint(screen, viewport)
+    inventario_hud.desenhar(screen, inventario, viewport)
 
     pygame.display.flip()
     dt = clock.tick(60) / 1000.0
