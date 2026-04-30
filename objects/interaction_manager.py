@@ -5,11 +5,13 @@ from render.textura import scanline_texture
 
 class InteractionManager:
     def __init__(self, paper_texture=None):
-        self.font_prompt = pygame.font.SysFont(None, 28)
-        self.font_world = pygame.font.SysFont(None, 34)
-        self.font_paper_title = pygame.font.SysFont(None, 38)
-        self.font_paper_body = pygame.font.SysFont(None, 30)
+        self.font_prompt = pygame.font.SysFont("objects/fontes/InriaSerif-Regular.ttf", 28)
+        self.font_world = pygame.font.SysFont("objects/fontes/InriaSerif-Regular.ttf", 34)
+        self.font_paper_title = pygame.font.SysFont("objects/fontes/InriaSerif-Regular.ttf", 38)
+        self.font_paper_body = pygame.font.SysFont("objects/fontes/InriaSerif-Regular.ttf", 30)
+        self.font_paper_hint = pygame.font.Font("objects/fontes/InriaSerif-Regular.ttf", 28)
         self.paper_texture = paper_texture
+        self._texture_cache = {}
 
         self.prompt_target = None
         self.world_message = ""
@@ -57,9 +59,19 @@ class InteractionManager:
         action_type = action.get("type", "message")
 
         if action_type == "paper":
+            texture = self.paper_texture
+            texture_path = action.get("texture_path")
+            is_image = False
+            if texture_path:
+                if texture_path not in self._texture_cache:
+                    self._texture_cache[texture_path] = pygame.image.load(texture_path).convert_alpha()
+                texture = self._texture_cache[texture_path]
+                is_image = True
             self.paper_open = {
                 "title": action.get("title", "Anotacao"),
                 "lines": action.get("lines", []),
+                "texture": texture,
+                "is_image": is_image,
             }
             self._paper_can_close = False
             return
@@ -102,13 +114,24 @@ class InteractionManager:
             (w // 2 - 220, h // 2 + 190),
         ]
 
-        if self.paper_texture is not None:
-            scanline_texture(screen, paper, self.paper_texture)
+        texture = self.paper_open.get("texture")
+        is_image = self.paper_open.get("is_image", False)
+
+        if texture is not None and is_image:
+            xs = [p[0] for p in paper]
+            ys = [p[1] for p in paper]
+            rect_x = min(xs)
+            rect_y = min(ys)
+            rect_w = max(xs) - min(xs)
+            rect_h = max(ys) - min(ys)
+            scaled = pygame.transform.scale(texture, (rect_w, rect_h))
+            screen.blit(scaled, (rect_x, rect_y))
+        elif texture is not None:
+            scanline_texture(screen, paper, texture)
+            pygame.draw.polygon(screen, (95, 82, 54), paper, 1)
         else:
             pygame.draw.polygon(screen, (233, 222, 188), paper)
-
-        # Borda discreta para evitar contorno forte/estranho.
-        pygame.draw.polygon(screen, (95, 82, 54), paper, 1)
+            pygame.draw.polygon(screen, (95, 82, 54), paper, 1)
 
         title = self.paper_open.get("title", "Documento")
         lines = self.paper_open.get("lines", [])
@@ -122,5 +145,5 @@ class InteractionManager:
             screen.blit(line_surface, (w // 2 - line_surface.get_width() // 2, y))
             y += 34
 
-        hint = self.font_prompt.render("E: fechar", True, (90, 75, 48))
+        hint = self.font_paper_hint.render("E: fechar", True, (255, 255, 255))
         screen.blit(hint, (w // 2 - hint.get_width() // 2, h // 2 + 140))

@@ -24,6 +24,8 @@ def build_rooms():
     bilhete_sala1 = [(250, 520), (330, 520), (330, 550), (250, 550)]
     placa_corredor = [(470, 355), (530, 355), (530, 395), (470, 395)]
     pergaminho_sala2 = [(700, 620), (790, 620), (790, 650), (700, 650)]
+    livro_coala = [(150, 400), (230, 400), (230, 430), (150, 430)]
+
 
     inter_bilhete = InteractableObject(
         "bilhete",
@@ -67,6 +69,21 @@ def build_rooms():
         show_border=False,
     )
 
+    inter_livro_coala = InteractableObject(
+        "livro_coala",
+        livro_coala,
+        (120, 80, 40),
+        (160, 110, 55),
+        {
+            "type": "paper",
+            "title": "",
+            "lines": [],
+            "texture_path": "texturas/documentos/livro_coala.png",
+        },
+        texture_key="paper",
+        show_border=True,
+    )
+
     sala1 = {
         "nome": "sala_1",
         "background_texture": "world/quarto.png",
@@ -85,11 +102,12 @@ def build_rooms():
             ([(540, 690), (982, 690), (982, 750), (540, 750)], (77, 78, 143), (77, 78, 143)),
             ([(460, 720), (540, 720), (540, 750), (460, 750)], (30, 20, 45), (30, 20, 45)),
             inter_bilhete.as_draw_item(),
+            inter_livro_coala.as_draw_item(),
         ],
         "portas_visuais": [
             # Porta invisivel: apenas vao entre as paredes + trigger de transicao.
         ],
-        "interactables": [inter_bilhete],
+        "interactables": [inter_bilhete, inter_livro_coala],
         "colliders": [
             sc(0, 0, 1000, 225),
             sc(0, 225, 18, 495),
