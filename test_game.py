@@ -207,9 +207,10 @@ while running:
 
     dados_room = room_manager.get_room()
     desenhar_sala(screen, dados_room, camera, viewport, textures, debug_clip)
-    desenhar_iluminacao(screen, player, dados_room, camera, viewport)
     player.draw(screen, camera, viewport, textura)
     desenhar_foreground(screen, dados_room, camera, viewport, textures, debug_clip)
+    if debug_light:
+        desenhar_iluminacao(screen, player, dados_room, camera, viewport)
 
     if room_manager.current_room == "sala_1":
         desenhar_coroa_estatua(screen, camera, viewport, inventario)
