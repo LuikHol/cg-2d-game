@@ -1,7 +1,7 @@
 import runpy
 from pathlib import Path
 
-from menu import menu_principal
+from menu.main_menu import menu_principal
 
 
 def executar_jogo():

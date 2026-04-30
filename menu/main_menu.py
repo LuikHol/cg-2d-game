@@ -152,7 +152,6 @@ def obter_animacoes_menu():
         }
         return ANIMACOES_MENU
 
-    # Fallback visual caso os arquivos nao existam.
     fallback = pygame.Surface((96, 140), pygame.SRCALPHA)
     scanline_fill(
         fallback,
@@ -215,9 +214,7 @@ def desenhar_personagem_menu(surface, tempo_segundos):
     surface.blit(sprite, sprite_rect)
 
     oscilacao_coroa = int(math.sin(tempo_segundos * 3.0) * 7)
-    coroa_rect = coroa.get_rect(
-        midbottom=(centro_x, sprite_rect.top + coroa.get_height() + oscilacao_coroa - 8)
-    )
+    coroa_rect = coroa.get_rect(midbottom=(centro_x, sprite_rect.top + coroa.get_height() + oscilacao_coroa - 8))
     surface.blit(coroa, coroa_rect)
 
 

@@ -1,4 +1,4 @@
-from objects.interaction_component import InteractableComponent
+from objects.componente_interagivel import ComponenteInteragivel
 
 
 class ObjetoInterativo:
@@ -9,7 +9,7 @@ class ObjetoInterativo:
         self.border_color = border_color
         self.texture_key = texture_key
         self.show_border = show_border
-        self.component = InteractableComponent.from_polygon(polygon, action)
+        self.component = ComponenteInteragivel.do_poligono(polygon, action)
 
     def get_center(self):
         x = sum(p[0] for p in self.polygon) / len(self.polygon)
