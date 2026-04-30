@@ -4,6 +4,7 @@ from render.poligono import desenhar_poligono
 from render.scanline import scanline_fill
 from render.viewport import world_to_viewport as mundo_para_viewport
 from render.textura import scanline_texture
+from render.superficie import escalar_superficie
 
 
 class GerenciadorInteracao:
@@ -11,7 +12,7 @@ class GerenciadorInteracao:
 
     def __init__(self, textura_papel=None, inventario=None):
         # Fontes de UI
-        self.fonte_prompt = pygame.font.SysFont("timesnewroman", 20)
+        self.fonte_prompt = pygame.font.SysFont("timesnewroman", 30)
         self.fonte_mundo = pygame.font.SysFont("timesnewroman", 20)
         self.fonte_titulo_papel = pygame.font.SysFont("timesnewroman", 38)
         self.fonte_corpo_papel = pygame.font.SysFont("timesnewroman", 20)
@@ -19,6 +20,7 @@ class GerenciadorInteracao:
         # Dependencias externas
         self.textura_papel = textura_papel
         self.inventario = inventario
+        self._texture_cache = {}
 
         # Estado de mensagens e prompt
         self.alvo_prompt = None
@@ -101,9 +103,19 @@ class GerenciadorInteracao:
             return
 
         if tipo_acao == "paper":
+            textura = self.textura_papel
+            caminho_textura = acao.get("texture_path")
+            e_imagem = False
+            if caminho_textura:
+                if caminho_textura not in self._texture_cache:
+                    self._texture_cache[caminho_textura] = pygame.image.load(caminho_textura).convert_alpha()
+                textura = self._texture_cache[caminho_textura]
+                e_imagem = True
             self.papel_aberto = {
                 "title": acao.get("title", "Anotacao"),
                 "lines": acao.get("lines", []),
+                "texture": textura,
+                "is_image": e_imagem,
             }
             self._papel_pode_fechar = False
             return
@@ -175,13 +187,25 @@ class GerenciadorInteracao:
             (largura_tela // 2 - 220, altura_tela // 2 + 190),
         ]
 
-        if self.textura_papel is not None:
-            scanline_texture(screen, papel, self.textura_papel)
+        textura = self.papel_aberto.get("texture")
+        e_imagem = self.papel_aberto.get("is_image", False)
+
+        if textura is not None and e_imagem:
+            xs = [p[0] for p in papel]
+            ys = [p[1] for p in papel]
+            rect_w = max(xs) - min(xs)
+            rect_h = max(ys) - min(ys)
+            scaled = escalar_superficie(textura, rect_w, rect_h)
+            screen.blit(scaled, (min(xs), min(ys)))
+        elif textura is not None:
+            scanline_texture(screen, papel, textura)
+            desenhar_poligono(screen, papel, (95, 82, 54))
         else:
             scanline_fill(screen, papel, (233, 222, 188))
+            desenhar_poligono(screen, papel, (95, 82, 54))
 
-        # Borda discreta para evitar contorno agressivo.
-        desenhar_poligono(screen, papel, (95, 82, 54))
+        # Borda discreta para evitar contorno forte/estranho.
+        # desenhar_poligono(screen, papel, (95, 82, 54))
 
         titulo = self.papel_aberto.get("title", "Documento")
         linhas = self.papel_aberto.get("lines", [])
@@ -195,5 +219,5 @@ class GerenciadorInteracao:
             screen.blit(superficie_linha, (largura_tela // 2 - superficie_linha.get_width() // 2, y))
             y += 34
 
-        dica = self.fonte_prompt.render("E: fechar", True, (90, 75, 48))
+        dica = self.fonte_prompt.render("E: fechar", True, (255, 255, 255))
         screen.blit(dica, (largura_tela // 2 - dica.get_width() // 2, altura_tela // 2 + 140))

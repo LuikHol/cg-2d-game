@@ -3,6 +3,7 @@ import pygame
 import math
 from pathlib import Path
 from render.poligono import desenhar_poligono
+from render.superficie import escalar_superficie, espelhar_x
 from render.pixel import setPixel
 from render.scanline import scanline_fill
 from render.textura import scanline_texture
@@ -101,7 +102,7 @@ class ObjetoJogador:
                 preparados = []
                 for quadro in quadros:
                     preparados.append(
-                        pygame.transform.scale(
+                        escalar_superficie(
                             quadro,
                             (
                                 max(1, int(largura_quadro * escala)),
@@ -150,7 +151,7 @@ class ObjetoJogador:
                 corte = self._recortar_alpha(quadro)
                 escala = altura_alvo / max(1, corte.get_height())
                 quadros_base_preparados.append(
-                    pygame.transform.scale(
+                    escalar_superficie(
                         corte,
                         (
                             max(1, int(corte.get_width() * escala)),
@@ -218,12 +219,10 @@ class ObjetoJogador:
         altura_canvas_alvo = max(1, int(altura_max_recorte * escala))
 
         for recorte in recortes:
-            quadro_escalado = pygame.transform.scale(
+            quadro_escalado = escalar_superficie(
                 recorte,
-                (
-                    max(1, int(recorte.get_width() * escala)),
-                    max(1, int(recorte.get_height() * escala)),
-                ),
+                max(1, int(recorte.get_width() * escala)),
+                max(1, int(recorte.get_height() * escala)),
             )
             # Canvas centralizado horizontalmente e ancorado no pe verticalmente.
             canvas = pygame.Surface((largura_canvas_alvo, altura_canvas_alvo), pygame.SRCALPHA)
@@ -282,7 +281,7 @@ class ObjetoJogador:
 
     def _espelhar_superficie_x(self, surface):
         """Espelha uma superficie horizontalmente."""
-        return pygame.transform.flip(surface, True, False)
+        return espelhar_x(surface)
 
     def _gerar_pontos_elipse(self, width, height, segmentos=28):
         """Gera poligono aproximando uma elipse para usar com scanline_fill."""

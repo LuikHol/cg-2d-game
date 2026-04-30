@@ -7,6 +7,7 @@ from render.textura import scanline_texture
 from render.clipping import clip_polygon_sutherland_hodgman
 from render.viewport import transformar_pontos, world_to_viewport
 from render.pixel import setPixel
+from render.superficie import escalar_superficie
 from configs.game_config import ZOOM_TEXTURA_FUNDO
 
 _background_cache = {}
@@ -113,13 +114,13 @@ def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_cl
                 escala = min(sw / max(1, raw_w), sh / max(1, raw_h))
                 tw = max(1, int(raw_w * escala))
                 th = max(1, int(raw_h * escala))
-                screen_img = pygame.transform.scale(raw, (tw, th))
+                screen_img = escalar_superficie(raw, tw, th)
                 # Mantem o objeto apoiado no "chao" do retangulo e centralizado no eixo X.
                 draw_x = sx1 + (sw - tw) // 2
                 draw_y = sy1 + (sh - th)
                 surface.blit(screen_img, (draw_x, draw_y))
             else:
-                screen_img = pygame.transform.scale(raw, (sw, sh))
+                screen_img = escalar_superficie(raw, tw, th)
                 surface.blit(screen_img, (sx1, sy1))
         else:
             desenhar_item(surface, item, camera, viewport, textures, debug_clip)
