@@ -192,6 +192,10 @@ while running:
     dx, dy = processar_input(keys, last_input_dir)
 
     dados_room = room_manager.get_room()
+
+    if gerenciador_interacao.papel_aberto:
+        dx, dy = 0, 0
+
     player.mover(dx, dy, dt, dados_room["colliders"])
     room_manager.update(player, dt)
 
