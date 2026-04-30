@@ -24,7 +24,8 @@ def construir_salas():
     bilhete_sala1 = [(250, 560), (330, 560), (330, 590), (250, 590)]
     placa_corredor = [(470, 355), (530, 355), (530, 395), (470, 395)]
     pergaminho_sala2 = [(700, 620), (790, 620), (790, 650), (700, 650)]
-    livro_coala = [(150, 400), (230, 400), (230, 430), (150, 430)]
+    livro_coala = [(350, 400), (400, 400), (400, 430), (350, 430)]
+    quadro_familia = [(875, 225), (940, 225), (940, 265), (875, 265)]
 
 
     inter_bilhete = ObjetoInterativo(
@@ -69,7 +70,7 @@ def construir_salas():
         show_border=False,
     )
 
-    inter_livro_coala = InteractableObject(
+    inter_livro_coala = ObjetoInterativo(
         "livro_coala",
         livro_coala,
         (120, 80, 40),
@@ -83,6 +84,20 @@ def construir_salas():
         texture_key="paper",
         show_border=True,
     )
+
+    inter_quadro = ObjetoInterativo(
+        "quadro",
+        quadro_familia,
+        None,
+        None,
+        {
+            "type": "message",
+            "text": "Sinto sua falta...",
+            "duration": 2.8,
+        },
+        show_border=False,
+    )
+
     # Coroa vermelha (pickup) sobre a estatua gata
     coroa_pickup = [(255, 260), (390, 260), (325, 310), (255, 310)]
     inter_coroa = ObjetoInterativo(
@@ -115,14 +130,14 @@ def construir_salas():
             ([(18, 690), (460, 690), (460, 750), (18, 750)], (77, 78, 143), (77, 78, 143)),
             ([(540, 690), (982, 690), (982, 750), (540, 750)], (77, 78, 143), (77, 78, 143)),
             ([(460, 720), (540, 720), (540, 750), (460, 750)], (30, 20, 45), (30, 20, 45)),
-            inter_bilhete.as_draw_item(),
-            inter_livro_coala.as_draw_item(),
+            inter_livro_coala.como_item_desenhavel(),
             inter_bilhete.como_item_desenhavel(),
+            inter_quadro.como_item_desenhavel(),
         ],
         "portas_visuais": [
             # Porta invisivel: apenas vao entre as paredes + trigger de transicao.
         ],
-        "interactables": [inter_bilhete, inter_coroa, inter_livro_coala],
+        "interactables": [inter_bilhete, inter_coroa, inter_livro_coala, inter_quadro],
         "lights": [
             # Luz fixa sobre a estatua gata.
             {"x": 310, "y": 180, "rx": 54, "ry": 42, "steps": 24},

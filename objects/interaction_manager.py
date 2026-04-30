@@ -12,6 +12,7 @@ class InteractionManager:
         self.fonte_mundo = pygame.font.SysFont("timesnewroman", 20)
         self.fonte_titulo_papel = pygame.font.SysFont("timesnewroman", 38)
         self.fonte_corpo_papel = pygame.font.SysFont("timesnewroman", 20)
+        self.fonte_dica_papel = pygame.font.SysFont("timesnewroman", 30)
         self.textura_papel = paper_texture
         self.inventario = inventario
         self._texture_cache = {}
@@ -95,11 +96,19 @@ class InteractionManager:
             return
 
         if tipo_acao == "paper":
+            textura = self.textura_papel
+            caminho_textura = action.get("texture_path")
+            e_imagem = False
+            if caminho_textura:
+                if caminho_textura not in self._texture_cache:
+                    self._texture_cache[caminho_textura] = pygame.image.load(caminho_textura).convert_alpha()
+                textura = self._texture_cache[caminho_textura]
+                e_imagem = True
             self.papel_aberto = {
                 "title": action.get("title", "Anotacao"),
                 "lines": action.get("lines", []),
-                "texture": texture,
-                "is_image": is_image,
+                "texture": textura,
+                "is_image": e_imagem,
             }
             self._papel_pode_fechar = False
             return
@@ -166,13 +175,25 @@ class InteractionManager:
             (largura_tela // 2 - 220, altura_tela // 2 + 190),
         ]
 
-        if self.textura_papel is not None:
-            scanline_texture(screen, papel, self.textura_papel)
+        textura = self.papel_aberto.get("texture")
+        e_imagem = self.papel_aberto.get("is_image", False)
+
+        if textura is not None and e_imagem:
+            xs = [p[0] for p in papel]
+            ys = [p[1] for p in papel]
+            rect_w = max(xs) - min(xs)
+            rect_h = max(ys) - min(ys)
+            scaled = pygame.transform.scale(textura, (rect_w, rect_h))
+            screen.blit(scaled, (min(xs), min(ys)))
+        elif textura is not None:
+            scanline_texture(screen, papel, textura)
+            desenhar_poligono(screen, papel, (95, 82, 54))
         else:
             scanline_fill(screen, papel, (233, 222, 188))
+            desenhar_poligono(screen, papel, (95, 82, 54))
 
         # Borda discreta para evitar contorno forte/estranho.
-        desenhar_poligono(screen, papel, (95, 82, 54))
+        # desenhar_poligono(screen, papel, (95, 82, 54))
 
         titulo = self.papel_aberto.get("title", "Documento")
         linhas = self.papel_aberto.get("lines", [])
@@ -186,5 +207,5 @@ class InteractionManager:
             screen.blit(superficie_linha, (largura_tela // 2 - superficie_linha.get_width() // 2, y))
             y += 34
 
-        hint = self.font_paper_hint.render("E: fechar", True, (255, 255, 255))
-        screen.blit(hint, (w // 2 - hint.get_width() // 2, h // 2 + 140))
+        hint = self.fonte_dica_papel.render("E: fechar", True, (255, 255, 255))
+        screen.blit(hint, (largura_tela // 2 - hint.get_width() // 2, altura_tela // 2 + 140))
