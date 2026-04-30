@@ -18,6 +18,8 @@ def criar_sala1():
     porta_sala1_y = sala1_y_max
 
     bilhete_sala1 = [(250, 560), (330, 560), (330, 590), (250, 590)]
+    livro_coala = [(350, 400), (400, 400), (400, 430), (350, 430)]
+    quadro_familia = [(875, 225), (940, 225), (940, 265), (875, 265)]
 
     inter_bilhete = ObjetoInterativo(
         "bilhete",
@@ -29,6 +31,34 @@ def criar_sala1():
             "text": "ola",
             "duration": 2.8,
         },
+    )
+
+    inter_livro_coala = ObjetoInterativo(
+        "livro_coala",
+        livro_coala,
+        (120, 80, 40),
+        (160, 110, 55),
+        {
+            "type": "paper",
+            "title": "",
+            "lines": [],
+            "texture_path": "texturas/documentos/livro_coala.png",
+        },
+        texture_key="paper",
+        show_border=True,
+    )
+
+    inter_quadro = ObjetoInterativo(
+        "quadro",
+        quadro_familia,
+        None,
+        None,
+        {
+            "type": "message",
+            "text": "Sinto sua falta...",
+            "duration": 2.8,
+        },
+        show_border=False,
     )
 
     coroa_pickup = [(255, 260), (390, 260), (325, 310), (255, 310)]
@@ -61,9 +91,11 @@ def criar_sala1():
                 (100, 65, 30),
             ),
             inter_bilhete.como_item_desenhavel(),
+            inter_livro_coala.como_item_desenhavel(),
+            inter_quadro.como_item_desenhavel(),
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete, inter_coroa],
+        "interactables": [inter_bilhete, inter_coroa, inter_livro_coala, inter_quadro],
         "foreground": [
             # Poltrona: ajuste so o valor de escala para mudar o tamanho.
             # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
