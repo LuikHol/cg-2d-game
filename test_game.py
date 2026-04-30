@@ -1,7 +1,6 @@
 ﻿import pygame
 import sys
 from configs.game_config import (
-
     ALTURA_MUNDO,
     ALTURA_TELA,
     CAMINHO_TEXTURA,
@@ -16,6 +15,7 @@ from configs.game_config import (
     TITULO_JANELA,
     VOLUME_MUSICA,
 )
+
 from objects.player_object import ObjetoJogador
 from objects.interaction_manager import GerenciadorInteracao
 from objects.room_manager import RoomManager
@@ -23,7 +23,7 @@ from world.rooms import construir_salas
 from objects.decoracoes import desenhar_coroa_estatua
 from render.sala_renderer import desenhar_sala, desenhar_foreground
 from render.iluminacao import desenhar_iluminacao
-from render.viewport import transformar_pontos, world_to_viewport
+from render.viewport import transformar_pontos, world_to_viewport, atualizar_camera_player_follow
 from render.poligono import desenhar_poligono
 from objects.inventario import Inventario
 from musica_loop import iniciar_musica_loop, trocar_musica_se_existir, parar_musica
@@ -194,6 +194,19 @@ while running:
     dados_room = room_manager.get_room()
     player.mover(dx, dy, dt, dados_room["colliders"])
     room_manager.update(player, dt)
+
+    # Camera segue somente salas que definem bounds (ex.: corredor horizontal).
+    dados_room = room_manager.get_room()
+    camera_bounds = dados_room.get("camera_bounds")
+    if camera_bounds:
+        camera = atualizar_camera_player_follow(
+            player.x,
+            player.y,
+            camera_bounds,
+            (LARGURA_MUNDO, ALTURA_MUNDO),
+        )
+    else:
+        camera = (0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
 
     current_room = room_manager.current_room
     if current_room != last_room_for_music:

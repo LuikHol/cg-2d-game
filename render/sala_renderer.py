@@ -63,35 +63,36 @@ def desenhar_background_da_sala(surface, room_data, camera, viewport):
         return False
 
     background = _carregar_background(background_path)
-    viewport_size = (viewport[2] - viewport[0], viewport[3] - viewport[1])
-    zoom = float(room_data.get("background_zoom", ZOOM_TEXTURA_FUNDO))
-    zoom = max(1.0, zoom)
-    cache_key = (background_path, viewport_size, zoom)
+    out_w = viewport[2] - viewport[0]
+    out_h = viewport[3] - viewport[1]
+    tex_w = background.get_width()
+    tex_h = background.get_height()
 
-    if cache_key not in _background_cache:
-        out_w, out_h = viewport_size
-        tex_w = background.get_width()
-        tex_h = background.get_height()
-        sampled = pygame.Surface((out_w, out_h)).convert()
+    # Define em que area do mundo esse PNG representa.
+    # Para salas maiores (ex.: corredor horizontal), isso permite pan com a camera.
+    bg_bounds = room_data.get("background_bounds", camera)
+    bx0, by0, bx1, by1 = bg_bounds
+    bw = max(1.0, float(bx1 - bx0))
+    bh = max(1.0, float(by1 - by0))
 
-        sample_w = 1.0 / zoom
-        sample_h = 1.0 / zoom
-        sample_u0 = (1.0 - sample_w) * 0.5
-        sample_v0 = (1.0 - sample_h) * 0.5
+    cx0, cy0, cx1, cy1 = camera
+    cam_w = max(1.0, float(cx1 - cx0))
+    cam_h = max(1.0, float(cy1 - cy0))
 
-        for y in range(out_h):
-            v = y / max(1, out_h - 1)
-            sv = sample_v0 + v * sample_h
-            tex_y = int(sv * (tex_h - 1))
-            for x in range(out_w):
-                u = x / max(1, out_w - 1)
-                su = sample_u0 + u * sample_w
-                tex_x = int(su * (tex_w - 1))
-                setPixel(sampled, x, y, background.get_at((tex_x, tex_y)))
+    # Mapeia o retangulo atual da camera para coordenadas da textura.
+    src_x = int((cx0 - bx0) / bw * tex_w)
+    src_y = int((cy0 - by0) / bh * tex_h)
+    src_w = int(cam_w / bw * tex_w)
+    src_h = int(cam_h / bh * tex_h)
 
-        _background_cache[cache_key] = sampled
+    src_w = max(1, min(tex_w, src_w))
+    src_h = max(1, min(tex_h, src_h))
+    src_x = max(0, min(tex_w - src_w, src_x))
+    src_y = max(0, min(tex_h - src_h, src_y))
 
-    surface.blit(_background_cache[cache_key], (viewport[0], viewport[1]))
+    recorte = background.subsurface((src_x, src_y, src_w, src_h))
+    amostra = pygame.transform.scale(recorte, (out_w, out_h))
+    surface.blit(amostra, (viewport[0], viewport[1]))
     return True
 
 

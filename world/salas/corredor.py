@@ -2,7 +2,6 @@ import pygame
 
 from objects.components import ComponenteColisaoEstatica
 from objects.objeto_interagivel import ObjetoInterativo
-from world.salas.utils import poligono_de_chao
 
 
 def criar_corredor():
@@ -24,25 +23,29 @@ def criar_corredor():
 
     return {
         "nome": "corredor",
-        "background_texture": "texturas/cenario/chaointeiro.png",
+        "background_texture": "texturas/cenario/corredor/corredor.png",
+        "background_zoom": 1.0,
+        "background_bounds": (0, 0, 1600, 750),
+        "camera_bounds": (0, 0, 1600, 750),
+        "vinheta_inferior": [
+            (0.58, (48, 40, 72, 45)),
+            (0.70, (40, 32, 62, 70)),
+            (0.82, (30, 24, 50, 95)),
+        ],
         "poligonos": [
-            poligono_de_chao([(0, 250), (1000, 250), (1000, 500), (0, 500)], (90, 88, 85), (120, 118, 112)),
-            ([(0, 0), (460, 0), (460, 180), (0, 180)], (45, 48, 58), (60, 64, 76)),
-            ([(540, 0), (1000, 0), (1000, 180), (540, 180)], (45, 48, 58), (60, 64, 76)),
-            ([(0, 500), (1000, 500), (1000, 750), (0, 750)], (45, 48, 58), (60, 64, 76)),
+            # Item interativo da placa.
             inter_placa.como_item_desenhavel(),
         ],
         "portas_visuais": [
-            ([(988, 320), (1000, 320), (1000, 440), (988, 440)], (170, 125, 70), (220, 180, 110)),
+            ([(1588, 320), (1600, 320), (1600, 440), (1588, 440)], (170, 125, 70), (220, 180, 110)),
         ],
         "interactables": [inter_placa],
         "colliders": [
-            colisao_estatica(0, 0, 460, 180),
-            colisao_estatica(540, 0, 460, 180),
-            colisao_estatica(0, 500, 1000, 250),
+            colisao_estatica(0, 0, 1600, 250),
+            colisao_estatica(0, 460, 1600, 290),
             colisao_estatica(0, 0, 12, 750),
-            colisao_estatica(988, 0, 12, 320),
-            colisao_estatica(988, 440, 12, 310),
+            colisao_estatica(1588, 0, 12, 320),
+            colisao_estatica(1588, 440, 12, 310),
         ],
         "transicoes": [
             {
@@ -51,7 +54,7 @@ def criar_corredor():
                 "spawn": (500, 650),
             },
             {
-                "trigger": pygame.Rect(988, 320, 12, 120),
+                "trigger": pygame.Rect(1588, 320, 12, 120),
                 "target": "sala_2",
                 "spawn": (40, 375),
             },
