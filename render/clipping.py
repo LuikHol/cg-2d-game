@@ -1,26 +1,24 @@
+from configs.clipping_config import ABAIXO, ACIMA, DENTRO, DIREITA, ESQUERDA
+
+
 # Codigos de regiao usados para classificar onde um ponto esta em relacao a janela.
 # Cada constante representa um bit: pode-se combinar com | para indicar dois lados ao mesmo tempo.
-INSIDE = 0   # dentro da janela
-LEFT   = 1   # a esquerda
-RIGHT  = 2   # a direita
-BOTTOM = 4   # abaixo
-TOP    = 8   # acima
 
 def compute_code(x, y, xmin, ymin, xmax, ymax):
     # Começa assumindo que o ponto esta dentro.
-    code = INSIDE
+    code = DENTRO
 
     # Verifica o eixo horizontal.
     if x < xmin:
-        code |= LEFT           # fora pela esquerda
+        code |= ESQUERDA           # fora pela esquerda
     elif x > xmax:
-        code |= RIGHT          # fora pela direita
+        code |= DIREITA          # fora pela direita
 
     # Verifica o eixo vertical (y cresce para baixo na tela).
     if y < ymin:
-        code |= TOP            # acima da janela
+        code |= ACIMA            # acima da janela
     elif y > ymax:
-        code |= BOTTOM         # abaixo da janela
+        code |= ABAIXO         # abaixo da janela
 
     return code
 
@@ -52,22 +50,22 @@ def cohen_sutherland(x1, y1, x2, y2, xmin, ymin, xmax, ymax):
                 code_out = code2
 
             # Calcula o ponto de intersecao com a borda correspondente.
-            if code_out & TOP:
+            if code_out & ACIMA:
                 # Cruza a borda do topo: interpola x para y = ymin.
                 x = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1)
                 y = ymin
 
-            elif code_out & BOTTOM:
+            elif code_out & ABAIXO:
                 # Cruza a borda de baixo: interpola x para y = ymax.
                 x = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1)
                 y = ymax
 
-            elif code_out & RIGHT:
+            elif code_out & DIREITA:
                 # Cruza a borda direita: interpola y para x = xmax.
                 y = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1)
                 x = xmax
 
-            elif code_out & LEFT:
+            elif code_out & ESQUERDA:
                 # Cruza a borda esquerda: interpola y para x = xmin.
                 y = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1)
                 x = xmin

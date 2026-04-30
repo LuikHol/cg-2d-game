@@ -1,6 +1,8 @@
 import pygame
+import math
 from pathlib import Path
 from render.poligono import desenhar_poligono
+from render.pixel import setPixel
 from render.scanline import scanline_fill
 from render.textura import scanline_texture
 from render.viewport import transformar_pontos
@@ -16,137 +18,140 @@ class PlayerObject:
         self.velocidade = 250  # unidades de mundo por segundo
         self.rigidbody = RigidbodyComponent()
         self.collider = ColliderComponent(tamanho * 1.4, tamanho * 1.4)
-        self.direction = "right"   # right | left | up | down
-        self.moving = False
-        self.anim_fps = 16.0
-        self.anim_timer = 0.0
-        self.anim_index = 0
+        self.direcao = "right"   # right | left | up | down
+        self.movendo = False
+        self.anim_fps = 9.0
+        self.tempo_animacao = 0.0
+        self.indice_animacao = 0
+        self.escala_sprite = 1.18
+        self.cache_sombra = {}
+        self.cache_coroa = {}
 
-        target_h = max(16, int(self.tamanho * 2.5))
+        altura_alvo = max(16, int(self.tamanho * 2.5 * self.escala_sprite))
 
         # Novo formato: 3 arquivos separados por direcao (4 frames cada).
-        strip_down = Path("texturas/menino1.png")
-        strip_side = Path("texturas/menino2.png")
-        strip_up = Path("texturas/menino3.png")
-        if strip_down.exists() and strip_side.exists() and strip_up.exists():
-            down_frames = self._carregar_frames_da_faixa(strip_down, target_h)
-            right_frames = self._carregar_frames_da_faixa(strip_side, target_h)
-            up_frames = self._carregar_frames_da_faixa(strip_up, target_h)
-            left_frames = [self._espelhar_superficie_x(f) for f in right_frames]
+        faixa_baixo = Path("texturas/personagem/menino1.png")
+        faixa_lado = Path("texturas/personagem/menino2.png")
+        faixa_cima = Path("texturas/personagem/menino3.png")
+        if faixa_baixo.exists() and faixa_lado.exists() and faixa_cima.exists():
+            quadros_baixo = self._carregar_quadros_da_faixa(faixa_baixo, altura_alvo)
+            quadros_direita = self._carregar_quadros_da_faixa(faixa_lado, altura_alvo)
+            quadros_cima = self._carregar_quadros_da_faixa(faixa_cima, altura_alvo)
+            quadros_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_direita]
 
-            down_frames, up_frames, right_frames, left_frames = self._normalizar_animacoes(
-                down_frames,
-                up_frames,
-                right_frames,
-                left_frames,
+            quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda = self._normalizar_animacoes(
+                quadros_baixo,
+                quadros_cima,
+                quadros_direita,
+                quadros_esquerda,
             )
 
-            self.animations = {
-                "down": down_frames,
-                "up": up_frames,
-                "right": right_frames,
-                "left": left_frames,
+            self.animacoes = {
+                "down": quadros_baixo,
+                "up": quadros_cima,
+                "right": quadros_direita,
+                "left": quadros_esquerda,
             }
-            self.frame_count = 4
+            self.quantidade_frames = 4
             return
 
-        self.sprite_sheet = pygame.image.load("texturas/menino.png").convert_alpha()
-        sheet_w = self.sprite_sheet.get_width()
-        sheet_h = self.sprite_sheet.get_height()
+        self.folha_sprite = pygame.image.load("texturas/menino.png").convert_alpha()
+        largura_folha = self.folha_sprite.get_width()
+        altura_folha = self.folha_sprite.get_height()
 
         # Spritesheet do menino: grade 4x3 (frente/lado/costas).
         # A linha do meio contem lados esquerdo e direito separados por colunas.
         usa_grade_4x3 = True
 
         if usa_grade_4x3:
-            frame_w = sheet_w // 4
-            frame_h = sheet_h // 3
-            up_head_extra = max(2, frame_h // 12)
+            largura_quadro = largura_folha // 4
+            altura_quadro = altura_folha // 3
+            extra_cabeca_cima = max(2, altura_quadro // 12)
 
-            rows = []
-            for row in range(3):
-                row_frames = []
-                for col in range(4):
-                    extra_top = up_head_extra if row == 2 else 0
-                    y = max(0, row * frame_h - extra_top)
-                    h = min(sheet_h - y, frame_h + extra_top)
-                    r = pygame.Rect(col * frame_w, y, frame_w, h)
-                    row_frames.append(self.sprite_sheet.subsurface(r).copy())
-                rows.append(row_frames)
+            linhas = []
+            for linha in range(3):
+                quadros_linha = []
+                for coluna in range(4):
+                    extra_topo = extra_cabeca_cima if linha == 2 else 0
+                    y = max(0, linha * altura_quadro - extra_topo)
+                    h = min(altura_folha - y, altura_quadro + extra_topo)
+                    retangulo = pygame.Rect(coluna * largura_quadro, y, largura_quadro, h)
+                    quadros_linha.append(self.folha_sprite.subsurface(retangulo).copy())
+                linhas.append(quadros_linha)
 
             # Escala baseada no conteudo real do sprite (ignorando transparencias extras).
-            target_h = max(16, int(self.tamanho * 3.5))
+            altura_alvo = max(16, int(self.tamanho * 3.5 * self.escala_sprite))
 
-            scale = target_h / max(1, frame_h)
+            escala = altura_alvo / max(1, altura_quadro)
 
-            def preparar_frames(frames):
+            def preparar_quadros(quadros):
                 preparados = []
-                for frame in frames:
+                for quadro in quadros:
                     preparados.append(
-                        pygame.transform.smoothscale(
-                            frame,
+                        pygame.transform.scale(
+                            quadro,
                             (
-                                max(1, int(frame_w * scale)),
-                                max(1, int(frame_h * scale)),
+                                max(1, int(largura_quadro * escala)),
+                                max(1, int(altura_quadro * escala)),
                             ),
                         )
                     )
                 return preparados
 
-            down_frames = preparar_frames(rows[0])
+            quadros_baixo = preparar_quadros(linhas[0])
             # Todos os 4 frames laterais estao virados para a direita;
             # left e gerado espelhando.
-            right_frames = preparar_frames(rows[1])
-            left_frames = [self._espelhar_superficie_x(f) for f in right_frames]
-            up_frames = preparar_frames(rows[2])
+            quadros_direita = preparar_quadros(linhas[1])
+            quadros_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_direita]
+            quadros_cima = preparar_quadros(linhas[2])
 
             # Normaliza todos os frames para o mesmo tamanho e ancora no "pe"
             # para evitar tremores ao trocar entre frente/costas/lados.
-            down_frames, up_frames, right_frames, left_frames = self._normalizar_animacoes(
-                down_frames,
-                up_frames,
-                right_frames,
-                left_frames,
+            quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda = self._normalizar_animacoes(
+                quadros_baixo,
+                quadros_cima,
+                quadros_direita,
+                quadros_esquerda,
             )
 
-            self.animations = {
-                "down": down_frames,
-                "up": up_frames,
-                "right": right_frames,
-                "left": left_frames,
+            self.animacoes = {
+                "down": quadros_baixo,
+                "up": quadros_cima,
+                "right": quadros_direita,
+                "left": quadros_esquerda,
             }
-            self.frame_count = 4
+            self.quantidade_frames = 4
         else:
             # Fallback para o spritesheet antigo em uma linha.
-            self.frame_count = 5
-            frame_w = sheet_w // self.frame_count
-            frame_h = sheet_h
-            base_frames = []
-            for i in range(self.frame_count):
-                r = pygame.Rect(i * frame_w, 0, frame_w, frame_h)
-                base_frames.append(self.sprite_sheet.subsurface(r).copy())
+            self.quantidade_frames = 5
+            largura_quadro = largura_folha // self.quantidade_frames
+            altura_quadro = altura_folha
+            quadros_base = []
+            for indice in range(self.quantidade_frames):
+                retangulo = pygame.Rect(indice * largura_quadro, 0, largura_quadro, altura_quadro)
+                quadros_base.append(self.folha_sprite.subsurface(retangulo).copy())
 
-            target_h = max(16, int(self.tamanho * 3.5))
-            base_frames_preparados = []
-            for frame in base_frames:
-                corte = self._recortar_alpha(frame)
-                scale = target_h / max(1, corte.get_height())
-                base_frames_preparados.append(
-                    pygame.transform.smoothscale(
+            altura_alvo = max(16, int(self.tamanho * 3.5 * self.escala_sprite))
+            quadros_base_preparados = []
+            for quadro in quadros_base:
+                corte = self._recortar_alpha(quadro)
+                escala = altura_alvo / max(1, corte.get_height())
+                quadros_base_preparados.append(
+                    pygame.transform.scale(
                         corte,
                         (
-                            max(1, int(corte.get_width() * scale)),
-                            max(1, int(corte.get_height() * scale)),
+                            max(1, int(corte.get_width() * escala)),
+                            max(1, int(corte.get_height() * escala)),
                         ),
                     )
                 )
-            base_frames = base_frames_preparados
-            base_frames_left = [self._espelhar_superficie_x(frame) for frame in base_frames]
-            self.animations = {
-                "down": base_frames,
-                "up": base_frames,
-                "right": base_frames,
-                "left": base_frames_left,
+            quadros_base = quadros_base_preparados
+            quadros_base_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_base]
+            self.animacoes = {
+                "down": quadros_base,
+                "up": quadros_base,
+                "right": quadros_base,
+                "left": quadros_base_esquerda,
             }
 
     def _recortar_alpha(self, surface):
@@ -155,55 +160,58 @@ class PlayerObject:
             return surface
         return surface.subsurface(bounds).copy()
 
-    def _carregar_frames_da_faixa(self, image_path, target_h):
-        strip = pygame.image.load(str(image_path)).convert_alpha()
-        frame_count = 4
-        frame_w = strip.get_width() // frame_count
-        frame_h = strip.get_height()
-        frames_raw = []
-        for i in range(frame_count):
-            r = pygame.Rect(i * frame_w, 0, frame_w, frame_h)
-            frames_raw.append(strip.subsurface(r).copy())
+    def _carregar_quadros_da_faixa(self, caminho_imagem, altura_alvo):
+        faixa = pygame.image.load(str(caminho_imagem)).convert_alpha()
+        quantidade_quadros = 4
+        largura_quadro = faixa.get_width() // quantidade_quadros
+        altura_quadro = faixa.get_height()
+        quadros_originais = []
+        for indice in range(quantidade_quadros):
+            retangulo = pygame.Rect(indice * largura_quadro, 0, largura_quadro, altura_quadro)
+            quadros_originais.append(faixa.subsurface(retangulo).copy())
 
-        # Usa o fundo da faixa como referencia e recorta por frame,
-        # depois ancora todos no pe para evitar "samba".
-        bg_color = frames_raw[0].get_at((0, 0))[:3]
-        crops = []
-        max_crop_w = 1
-        max_crop_h = 1
-        for frame in frames_raw:
-            b = self._bounds_not_bg(frame, bg_color, tolerance=18)
-            if b is None:
-                b = pygame.Rect(0, 0, frame_w, frame_h)
-            crop = frame.subsurface(b).copy()
-            crops.append(crop)
-            if crop.get_width() > max_crop_w:
-                max_crop_w = crop.get_width()
-            if crop.get_height() > max_crop_h:
-                max_crop_h = crop.get_height()
+        recortes = []
+        largura_max_recorte = 1
+        altura_max_recorte = 1
+        for quadro in quadros_originais:
+            b = quadro.get_bounding_rect(min_alpha=1)
+            if b.width <= 0 or b.height <= 0:
+                b = pygame.Rect(0, 0, largura_quadro, altura_quadro)
+            else:
+                # Pequena folga para evitar corte seco na borda do sprite.
+                folga = 1
+                x = max(0, b.x - folga)
+                y = max(0, b.y - folga)
+                w = min(largura_quadro - x, b.width + (2 * folga))
+                h = min(altura_quadro - y, b.height + (2 * folga))
+                b = pygame.Rect(x, y, w, h)
+            recorte = quadro.subsurface(b).copy()
+            recortes.append(recorte)
+            if recorte.get_width() > largura_max_recorte:
+                largura_max_recorte = recorte.get_width()
+            if recorte.get_height() > altura_max_recorte:
+                altura_max_recorte = recorte.get_height()
 
-        scale = target_h / max(1, max_crop_h)
-        frames = []
-        target_canvas_w = max(1, int(max_crop_w * scale))
-        target_canvas_h = max(1, int(max_crop_h * scale))
+        escala = altura_alvo / max(1, altura_max_recorte)
+        quadros = []
+        largura_canvas_alvo = max(1, int(largura_max_recorte * escala))
+        altura_canvas_alvo = max(1, int(altura_max_recorte * escala))
 
-        for cropped in crops:
-            scaled = pygame.transform.smoothscale(
-                cropped,
+        for recorte in recortes:
+            quadro_escalado = pygame.transform.scale(
+                recorte,
                 (
-                    max(1, int(cropped.get_width() * scale)),
-                    max(1, int(cropped.get_height() * scale)),
+                    max(1, int(recorte.get_width() * escala)),
+                    max(1, int(recorte.get_height() * escala)),
                 ),
             )
-            canvas = pygame.Surface((target_canvas_w, target_canvas_h), pygame.SRCALPHA)
+            canvas = pygame.Surface((largura_canvas_alvo, altura_canvas_alvo), pygame.SRCALPHA)
             # Centraliza em x e ancora no pe para estabilizar a caminhada.
-            x = (target_canvas_w - scaled.get_width()) // 2
-            y = target_canvas_h - scaled.get_height()
-            canvas.blit(scaled, (x, y))
-            frames.append(
-                canvas
-            )
-        return frames
+            x = (largura_canvas_alvo - quadro_escalado.get_width()) // 2
+            y = altura_canvas_alvo - quadro_escalado.get_height()
+            canvas.blit(quadro_escalado, (x, y))
+            quadros.append(canvas)
+        return quadros
 
     def _bounds_not_bg(self, surface, bg_color, tolerance=18):
         w, h = surface.get_size()
@@ -231,31 +239,95 @@ class PlayerObject:
             return None
         return pygame.Rect(min_x, min_y, (max_x - min_x) + 1, (max_y - min_y) + 1)
 
-    def _normalizar_animacoes(self, down_frames, up_frames, right_frames, left_frames):
-        grupos = [down_frames, up_frames, right_frames, left_frames]
-        todos = [frame for grupo in grupos for frame in grupo]
-        max_w = max(frame.get_width() for frame in todos)
-        max_h = max(frame.get_height() for frame in todos)
+    def _normalizar_animacoes(self, quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda):
+        grupos = [quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda]
+        todos = [quadro for grupo in grupos for quadro in grupo]
+        largura_maxima = max(quadro.get_width() for quadro in todos)
+        altura_maxima = max(quadro.get_height() for quadro in todos)
 
         def padronizar(grupo):
             saida = []
-            for frame in grupo:
-                w, h = frame.get_size()
-                canvas = pygame.Surface((max_w, max_h), pygame.SRCALPHA)
+            for quadro in grupo:
+                w, h = quadro.get_size()
+                canvas = pygame.Surface((largura_maxima, altura_maxima), pygame.SRCALPHA)
                 # Centraliza em x e ancora no pe (base do sprite).
-                canvas.blit(frame, ((max_w - w) // 2, max_h - h))
+                canvas.blit(quadro, ((largura_maxima - w) // 2, altura_maxima - h))
                 saida.append(canvas)
             return saida
 
-        return padronizar(down_frames), padronizar(up_frames), padronizar(right_frames), padronizar(left_frames)
+        return padronizar(quadros_baixo), padronizar(quadros_cima), padronizar(quadros_direita), padronizar(quadros_esquerda)
 
     def _espelhar_superficie_x(self, surface):
         return pygame.transform.flip(surface, True, False)
 
+    def _gerar_pontos_elipse(self, width, height, segmentos=28):
+        cx = width // 2
+        cy = height // 2
+        rx = max(1, width // 2)
+        ry = max(1, height // 2)
+        pontos = []
+        for i in range(segmentos):
+            ang = (2.0 * math.pi * i) / segmentos
+            x = int(cx + rx * math.cos(ang))
+            y = int(cy + ry * math.sin(ang))
+            pontos.append((x, y))
+        return pontos
+
+    def _get_contact_shadow(self, width, height):
+        chave = (width, height)
+        sombra_em_cache = self.cache_sombra.get(chave)
+        if sombra_em_cache is not None:
+            return sombra_em_cache
+
+        superficie = pygame.Surface((width, height), pygame.SRCALPHA)
+        pontos = self._gerar_pontos_elipse(width, height)
+        scanline_fill(superficie, pontos, (0, 0, 0, 42))
+        self.cache_sombra[chave] = superficie
+        return superficie
+
+    def _get_crown_surface(self, pixel_size):
+        chave = max(1, int(pixel_size))
+        coroa_em_cache = self.cache_coroa.get(chave)
+        if coroa_em_cache is not None:
+            return coroa_em_cache
+
+        pattern = [
+            "00100100",
+            "00111100",
+            "01111110",
+            "11111111",
+            "01111110",
+            "00111100",
+        ]
+        largura = len(pattern[0]) * chave
+        altura = len(pattern) * chave
+        superficie = pygame.Surface((largura, altura), pygame.SRCALPHA)
+        dourado = (246, 210, 74, 255)
+        dourado_escuro = (179, 128, 26, 255)
+        joia = (220, 70, 80, 255)
+
+        for py, row in enumerate(pattern):
+            for px, value in enumerate(row):
+                if value == "0":
+                    continue
+                color = dourado
+                if py >= len(pattern) - 2:
+                    color = dourado_escuro
+                if (px, py) in {(3, 2), (4, 2)}:
+                    color = joia
+                inicio_x = px * chave
+                inicio_y = py * chave
+                for desloc_y in range(chave):
+                    for desloc_x in range(chave):
+                        setPixel(superficie, inicio_x + desloc_x, inicio_y + desloc_y, color)
+
+        self.cache_coroa[chave] = superficie
+        return superficie
+
     def mover(self, dx, dy, dt, static_colliders):
         self.rigidbody.velocity.x = dx * self.velocidade
         self.rigidbody.velocity.y = dy * self.velocidade
-        self.moving = (dx != 0 or dy != 0)
+        self.movendo = (dx != 0 or dy != 0)
 
 
         atual = self.collider.get_rect_from_center(self.x, self.y)
@@ -266,21 +338,21 @@ class PlayerObject:
         self.x = float(resolvido.centerx)
         self.y = float(resolvido.centery)
 
-        if self.moving:
+        if self.movendo:
             if abs(dx) >= abs(dy):
-                self.direction = "right" if dx > 0 else "left"
+                self.direcao = "right" if dx > 0 else "left"
             else:
-                self.direction = "down" if dy > 0 else "up"
+                self.direcao = "down" if dy > 0 else "up"
 
         # animação
-        if self.moving:
-            self.anim_timer += dt
+        if self.movendo:
+            self.tempo_animacao += dt
             frame_time = 1.0 / self.anim_fps
-            while self.anim_timer >= frame_time:
-                self.anim_timer -= frame_time
-                self.anim_index = (self.anim_index + 1) % self.frame_count
+            while self.tempo_animacao >= frame_time:
+                self.tempo_animacao -= frame_time
+                self.indice_animacao = (self.indice_animacao + 1) % self.quantidade_frames
         else:
-            self.anim_index = 0
+            self.indice_animacao = 0
 
     def get_pontos(self):
         # Representa o player como um losango centrado em (x, y)
@@ -298,16 +370,31 @@ class PlayerObject:
             return
 
         # Se os frames existem, desenha sprite animado.
-        if hasattr(self, "animations") and self.animations:
+        if hasattr(self, "animacoes") and self.animacoes:
             sx, sy = transformar_pontos([(self.x, self.y)], camera, viewport)[0]
-            frames_dir = self.animations.get(self.direction, self.animations.get("down", []))
-            if not frames_dir:
-                frames_dir = next(iter(self.animations.values()))
-            frame = frames_dir[self.anim_index % len(frames_dir)]
+            quadros_direcao = self.animacoes.get(self.direcao, self.animacoes.get("down", []))
+            if not quadros_direcao:
+                quadros_direcao = next(iter(self.animacoes.values()))
+            quadro = quadros_direcao[self.indice_animacao % len(quadros_direcao)]
 
             # Ancora visual no pe do personagem.
-            rect = frame.get_rect(midbottom=(sx, sy + self.tamanho))
-            screen.blit(frame, rect)
+            rect = quadro.get_rect(midbottom=(sx, sy + self.tamanho))
+
+            largura_sombra = max(10, int(quadro.get_width() * 0.36))
+            altura_sombra = max(4, int(quadro.get_height() * 0.10))
+            sombra_contato = self._get_contact_shadow(largura_sombra, altura_sombra)
+            retangulo_sombra = sombra_contato.get_rect(center=(sx, sy + self.tamanho + 1))
+            screen.blit(sombra_contato, retangulo_sombra)
+
+            screen.blit(quadro, rect)
+
+            tamanho_pixel_coroa = max(2, int(quadro.get_height() * 0.05))
+            coroa = self._get_crown_surface(tamanho_pixel_coroa)
+            oscilacao = int(pygame.time.get_ticks() / 220) % 2
+            retangulo_coroa = coroa.get_rect(
+                midbottom=(sx, rect.top + max(3, coroa.get_height() // 2) + oscilacao)
+            )
+            screen.blit(coroa, retangulo_coroa)
             return
 
         # Fallback para o desenho poligonal anterior.
