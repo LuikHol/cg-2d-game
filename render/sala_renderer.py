@@ -10,6 +10,7 @@ from render.pixel import setPixel
 from configs.game_config import ZOOM_TEXTURA_FUNDO
 
 _background_cache = {}
+_foreground_image_cache = {}
 
 
 def item_eh_chao_base(item):
@@ -95,19 +96,30 @@ def desenhar_background_da_sala(surface, room_data, camera, viewport):
 
 
 def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_clip=False):
-    foreground_image_cache = {}
     for item in room_data.get("foreground", []):
         if isinstance(item, dict) and "image_path" in item:
             img_path = item["image_path"]
             wx, wy, ww, wh = item["rect"]
-            if img_path not in foreground_image_cache:
-                foreground_image_cache[img_path] = pygame.image.load(img_path).convert_alpha()
-            raw = foreground_image_cache[img_path]
+            if img_path not in _foreground_image_cache:
+                _foreground_image_cache[img_path] = pygame.image.load(img_path).convert_alpha()
+            raw = _foreground_image_cache[img_path]
             sx1, sy1 = world_to_viewport(wx, wy, camera, viewport)
             sx2, sy2 = world_to_viewport(wx + ww, wy + wh, camera, viewport)
             sw, sh = max(1, sx2 - sx1), max(1, sy2 - sy1)
-            screen_img = pygame.transform.scale(raw, (sw, sh))
-            surface.blit(screen_img, (sx1, sy1))
+
+            if item.get("preserve_aspect", True):
+                raw_w, raw_h = raw.get_size()
+                escala = min(sw / max(1, raw_w), sh / max(1, raw_h))
+                tw = max(1, int(raw_w * escala))
+                th = max(1, int(raw_h * escala))
+                screen_img = pygame.transform.scale(raw, (tw, th))
+                # Mantem o objeto apoiado no "chao" do retangulo e centralizado no eixo X.
+                draw_x = sx1 + (sw - tw) // 2
+                draw_y = sy1 + (sh - th)
+                surface.blit(screen_img, (draw_x, draw_y))
+            else:
+                screen_img = pygame.transform.scale(raw, (sw, sh))
+                surface.blit(screen_img, (sx1, sy1))
         else:
             desenhar_item(surface, item, camera, viewport, textures, debug_clip)
 

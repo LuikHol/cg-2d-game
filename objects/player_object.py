@@ -1,3 +1,4 @@
+"""Objeto do jogador com animacao, fisicas e renderizacao."""
 import pygame
 import math
 from pathlib import Path
@@ -10,23 +11,33 @@ from render.clipping import clip_polygon_sutherland_hodgman
 from objects.components import RigidbodyComponent, ColliderComponent, resolve_axis_aligned_motion
 
 
-class PlayerObject:
+class ObjetoJogador:
+    """Representa o jogador no mundo com sprite animado, colisoes e fisicas."""
+
     def __init__(self, x, y, tamanho=20):
+        # Posicao no mundo (ponto central do corpo).
         self.x = float(x)
         self.y = float(y)
         self.tamanho = tamanho
+
+        # Fisicas basicas.
         self.velocidade = 250  # unidades de mundo por segundo
         self.rigidbody = RigidbodyComponent()
         self.collider = ColliderComponent(tamanho * 1.4, tamanho * 1.4)
+
+        # Estado de movimento e animacao.
         self.direcao = "right"   # right | left | up | down
         self.movendo = False
         self.anim_fps = 9.0
         self.tempo_animacao = 0.0
         self.indice_animacao = 0
         self.escala_sprite = 1.18
+
+        # Cache de superficies renderizadas para nao recriar a cada frame.
         self.cache_sombra = {}
         self.cache_coroa = {}
 
+        # Calcula altura alvo do sprite baseado no tamanho do jogador.
         altura_alvo = max(16, int(self.tamanho * 2.5 * self.escala_sprite))
 
         # Novo formato: 3 arquivos separados por direcao (4 frames cada).
@@ -55,6 +66,7 @@ class PlayerObject:
             self.quantidade_frames = 4
             return
 
+        # Fallback: carrega spritesheet unificada se os arquivos individuais nao existirem.
         self.folha_sprite = pygame.image.load("texturas/menino.png").convert_alpha()
         largura_folha = self.folha_sprite.get_width()
         altura_folha = self.folha_sprite.get_height()
@@ -85,6 +97,7 @@ class PlayerObject:
             escala = altura_alvo / max(1, altura_quadro)
 
             def preparar_quadros(quadros):
+                """Prepara quadros aplicando escala uniforme."""
                 preparados = []
                 for quadro in quadros:
                     preparados.append(
@@ -100,7 +113,7 @@ class PlayerObject:
 
             quadros_baixo = preparar_quadros(linhas[0])
             # Todos os 4 frames laterais estao virados para a direita;
-            # left e gerado espelhando.
+            # left é gerado espelhando.
             quadros_direita = preparar_quadros(linhas[1])
             quadros_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_direita]
             quadros_cima = preparar_quadros(linhas[2])
@@ -155,12 +168,17 @@ class PlayerObject:
             }
 
     def _recortar_alpha(self, surface):
+        """Recorta a superficie removendo bordas transparentes."""
         bounds = surface.get_bounding_rect(min_alpha=1)
         if bounds.width <= 0 or bounds.height <= 0:
             return surface
         return surface.subsurface(bounds).copy()
 
     def _carregar_quadros_da_faixa(self, caminho_imagem, altura_alvo):
+        """Carrega e processa frames de animacao a partir de uma faixa de sprite.
+        
+        Extrai 4 frames, aplica escala proporcional e centra/ancora no pe.
+        """
         faixa = pygame.image.load(str(caminho_imagem)).convert_alpha()
         quantidade_quadros = 4
         largura_quadro = faixa.get_width() // quantidade_quadros
@@ -170,6 +188,7 @@ class PlayerObject:
             retangulo = pygame.Rect(indice * largura_quadro, 0, largura_quadro, altura_quadro)
             quadros_originais.append(faixa.subsurface(retangulo).copy())
 
+        # Recorta cada frame removendo alfa transparente.
         recortes = []
         largura_max_recorte = 1
         altura_max_recorte = 1
@@ -192,6 +211,7 @@ class PlayerObject:
             if recorte.get_height() > altura_max_recorte:
                 altura_max_recorte = recorte.get_height()
 
+        # Escala proporcional baseada na altura maxima dos recortes.
         escala = altura_alvo / max(1, altura_max_recorte)
         quadros = []
         largura_canvas_alvo = max(1, int(largura_max_recorte * escala))
@@ -205,8 +225,8 @@ class PlayerObject:
                     max(1, int(recorte.get_height() * escala)),
                 ),
             )
+            # Canvas centralizado horizontalmente e ancorado no pe verticalmente.
             canvas = pygame.Surface((largura_canvas_alvo, altura_canvas_alvo), pygame.SRCALPHA)
-            # Centraliza em x e ancora no pe para estabilizar a caminhada.
             x = (largura_canvas_alvo - quadro_escalado.get_width()) // 2
             y = altura_canvas_alvo - quadro_escalado.get_height()
             canvas.blit(quadro_escalado, (x, y))
@@ -214,6 +234,7 @@ class PlayerObject:
         return quadros
 
     def _bounds_not_bg(self, surface, bg_color, tolerance=18):
+        """Calcula bounding box ignorando pixels proximos da cor de fundo."""
         w, h = surface.get_size()
         min_x, min_y = w, h
         max_x, max_y = -1, -1
@@ -240,12 +261,14 @@ class PlayerObject:
         return pygame.Rect(min_x, min_y, (max_x - min_x) + 1, (max_y - min_y) + 1)
 
     def _normalizar_animacoes(self, quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda):
+        """Normaliza todos os frames para mesmo tamanho, centralizando e ancorand no pe."""
         grupos = [quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda]
         todos = [quadro for grupo in grupos for quadro in grupo]
         largura_maxima = max(quadro.get_width() for quadro in todos)
         altura_maxima = max(quadro.get_height() for quadro in todos)
 
         def padronizar(grupo):
+            """Coloca cada frame em um canvas padrao, centralizado e ancorado."""
             saida = []
             for quadro in grupo:
                 w, h = quadro.get_size()
@@ -258,9 +281,11 @@ class PlayerObject:
         return padronizar(quadros_baixo), padronizar(quadros_cima), padronizar(quadros_direita), padronizar(quadros_esquerda)
 
     def _espelhar_superficie_x(self, surface):
+        """Espelha uma superficie horizontalmente."""
         return pygame.transform.flip(surface, True, False)
 
     def _gerar_pontos_elipse(self, width, height, segmentos=28):
+        """Gera poligono aproximando uma elipse para usar com scanline_fill."""
         cx = width // 2
         cy = height // 2
         rx = max(1, width // 2)
@@ -274,11 +299,13 @@ class PlayerObject:
         return pontos
 
     def _get_contact_shadow(self, width, height):
+        """Retorna sombra de contato em cache (otimizacao)."""
         chave = (width, height)
         sombra_em_cache = self.cache_sombra.get(chave)
         if sombra_em_cache is not None:
             return sombra_em_cache
 
+        # Desenha sombra como elipse preenchida com alpha baixo.
         superficie = pygame.Surface((width, height), pygame.SRCALPHA)
         pontos = self._gerar_pontos_elipse(width, height)
         scanline_fill(superficie, pontos, (0, 0, 0, 42))
@@ -286,11 +313,13 @@ class PlayerObject:
         return superficie
 
     def _get_crown_surface(self, pixel_size):
+        """Retorna coroa renderizada em cache (otimizacao)."""
         chave = max(1, int(pixel_size))
         coroa_em_cache = self.cache_coroa.get(chave)
         if coroa_em_cache is not None:
             return coroa_em_cache
 
+        # Desenha coroa usando padroes de pixels (retro style).
         pattern = [
             "00100100",
             "00111100",
@@ -325,26 +354,30 @@ class PlayerObject:
         return superficie
 
     def mover(self, dx, dy, dt, static_colliders):
+        """Atualiza movimento, colisoes, direcao e animacao."""
+        # Define velocidade baseada no input.
         self.rigidbody.velocity.x = dx * self.velocidade
         self.rigidbody.velocity.y = dy * self.velocidade
         self.movendo = (dx != 0 or dy != 0)
 
-
+        # Resolve colisoes com retangulo de colisao axis-aligned.
         atual = self.collider.get_rect_from_center(self.x, self.y)
         move_x = self.rigidbody.velocity.x * dt
         move_y = self.rigidbody.velocity.y * dt
         resolvido = resolve_axis_aligned_motion(atual, move_x, move_y, static_colliders)
 
+        # Atualiza posicao do centro.
         self.x = float(resolvido.centerx)
         self.y = float(resolvido.centery)
 
+        # Determina direcao baseado na velocidade (prioriza horizontal).
         if self.movendo:
             if abs(dx) >= abs(dy):
                 self.direcao = "right" if dx > 0 else "left"
             else:
                 self.direcao = "down" if dy > 0 else "up"
 
-        # animação
+        # Atualiza animacao: incrementa frame quando movendo, reseta quando parado.
         if self.movendo:
             self.tempo_animacao += dt
             frame_time = 1.0 / self.anim_fps
@@ -355,7 +388,7 @@ class PlayerObject:
             self.indice_animacao = 0
 
     def get_pontos(self):
-        # Representa o player como um losango centrado em (x, y)
+        """Retorna os pontos do corpo do jogador como losango (fallback para renderizacao poligonal)."""
         t = self.tamanho
         return [
             (self.x,     self.y - t),   # topo
@@ -365,6 +398,12 @@ class PlayerObject:
         ]
 
     def draw(self, screen, camera, viewport, textura=None):
+        """Renderiza o jogador com sprite animado, sombra e coroa.
+        
+        Culling: nao renderiza se fora do viewport.
+        Se animacoes existem: usa sprite com sombra e coroa pulsante.
+        Senao: fallback para poligono losango.
+        """
         # Culling simples no mundo antes de converter para a tela.
         if not (camera[0] <= self.x <= camera[2] and camera[1] <= self.y <= camera[3]):
             return
@@ -380,14 +419,17 @@ class PlayerObject:
             # Ancora visual no pe do personagem.
             rect = quadro.get_rect(midbottom=(sx, sy + self.tamanho))
 
+            # Renderiza sombra de contato no solo.
             largura_sombra = max(10, int(quadro.get_width() * 0.36))
             altura_sombra = max(4, int(quadro.get_height() * 0.10))
             sombra_contato = self._get_contact_shadow(largura_sombra, altura_sombra)
             retangulo_sombra = sombra_contato.get_rect(center=(sx, sy + self.tamanho + 1))
             screen.blit(sombra_contato, retangulo_sombra)
 
+            # Renderiza sprite principal.
             screen.blit(quadro, rect)
 
+            # Renderiza coroa pulsante acima da cabeca.
             tamanho_pixel_coroa = max(2, int(quadro.get_height() * 0.05))
             coroa = self._get_crown_surface(tamanho_pixel_coroa)
             oscilacao = int(pygame.time.get_ticks() / 220) % 2

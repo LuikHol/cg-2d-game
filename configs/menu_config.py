@@ -13,4 +13,4 @@ COR_TEXTO = (245, 240, 224)
 FONTE_TITULO = "georgia"
 FONTE_BOTAO = "georgia"
 
-TITULO_MENU = "Reino Roxo"
+TITULO_MENU = "Príncipe Dorminhoco"
