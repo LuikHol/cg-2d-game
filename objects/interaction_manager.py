@@ -4,6 +4,7 @@ from render.poligono import desenhar_poligono
 from render.scanline import scanline_fill
 from render.viewport import world_to_viewport as mundo_para_viewport
 from render.textura import scanline_texture
+from render.superficie import escalar_superficie
 
 
 class GerenciadorInteracao:
@@ -194,7 +195,7 @@ class GerenciadorInteracao:
             ys = [p[1] for p in papel]
             rect_w = max(xs) - min(xs)
             rect_h = max(ys) - min(ys)
-            scaled = pygame.transform.scale(textura, (rect_w, rect_h))
+            scaled = escalar_superficie(textura, rect_w, rect_h)
             screen.blit(scaled, (min(xs), min(ys)))
         elif textura is not None:
             scanline_texture(screen, papel, textura)
