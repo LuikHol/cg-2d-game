@@ -103,7 +103,7 @@ class GerenciadorInteracao:
 
         if tipo_acao == "paper":
             textura = self.textura_papel
-            caminho_textura = action.get("texture_path")
+            caminho_textura = acao.get("texture_path")
             e_imagem = False
             if caminho_textura:
                 if caminho_textura not in self._texture_cache:
