@@ -1,9 +1,9 @@
 import math
 import pygame
 from render.poligono import desenhar_poligono
-from render.scanline import scanline_fill
+from render.preenchimento import scanline_fill
 from render.viewport import world_to_viewport as mundo_para_viewport
-from render.textura import scanline_texture
+from render.preenchimento import scanline_texture
 
 
 class GerenciadorInteracao:
