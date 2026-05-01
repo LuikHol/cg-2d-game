@@ -1,7 +1,8 @@
 import math
 from render.poligono import desenhar_poligono
-from render.scanline import scanline_fill
+from render.preenchimento import scanline_fill
 from render.transformacoes import *
+from render.geometry_utils import polygon_centroid
 
 class PolygonObject:
     def __init__(self, pontos):
@@ -19,8 +20,7 @@ class PolygonObject:
         self.vel_tempo = 3.0
 
         # calcula centro (pivô)
-        self.cx = sum(p[0] for p in pontos) / len(pontos)
-        self.cy = sum(p[1] for p in pontos) / len(pontos)
+        self.cx, self.cy = polygon_centroid(pontos)
 
     def update(self, dt=1 / 60):
         # animação independente de FPS (dt em segundos)
