@@ -1,4 +1,5 @@
 import math
+from render.geometry_utils import polygon_centroid
 
 # =========================
 # MATRIZES BASE
@@ -85,8 +86,7 @@ def aplica_transformacao(m, pontos):
 def transformar_poligono(pontos, x, y, angulo, escala_val):
     # Calcula centro geometrico (media dos vertices) para usar como pivô.
     # Assim a rotacao/escala acontecem "no proprio objeto", e nao no (0, 0) global.
-    cx = sum(p[0] for p in pontos) / len(pontos)
-    cy = sum(p[1] for p in pontos) / len(pontos)
+    cx, cy = polygon_centroid(pontos)
 
     # Composicao das transformacoes (aplicadas da direita para a esquerda no ponto):
     # 1) Leva o pivô para a origem: T(-c)

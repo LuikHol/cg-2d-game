@@ -1,4 +1,4 @@
-from render.linha import bresenham
+from render.primitivas import bresenham
 
 def desenhar_poligono(surface, pontos, color):
     # Conta quantos vertices existem na lista de pontos.

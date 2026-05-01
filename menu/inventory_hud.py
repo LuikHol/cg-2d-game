@@ -1,6 +1,6 @@
 import pygame
 from render.pixel import setPixel
-from render.scanline import scanline_fill
+from render.preenchimento import scanline_fill
 
 
 def _rect_para_poligono(x, y, w, h):

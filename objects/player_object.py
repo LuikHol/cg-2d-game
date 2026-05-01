@@ -4,10 +4,10 @@ import math
 from pathlib import Path
 from render.poligono import desenhar_poligono
 from render.pixel import setPixel
-from render.scanline import scanline_fill
-from render.textura import scanline_texture
+from render.preenchimento import scanline_fill, scanline_texture
 from render.viewport import transformar_pontos
 from render.clipping import clip_polygon_sutherland_hodgman
+from render.geometry_utils import ellipse_points
 from objects.components import RigidbodyComponent, ColliderComponent, resolve_axis_aligned_motion
 
 
@@ -290,13 +290,7 @@ class ObjetoJogador:
         cy = height // 2
         rx = max(1, width // 2)
         ry = max(1, height // 2)
-        pontos = []
-        for i in range(segmentos):
-            ang = (2.0 * math.pi * i) / segmentos
-            x = int(cx + rx * math.cos(ang))
-            y = int(cy + ry * math.sin(ang))
-            pontos.append((x, y))
-        return pontos
+        return ellipse_points(cx, cy, rx, ry, segmentos)
 
     def _get_contact_shadow(self, width, height):
         """Retorna sombra de contato em cache (otimizacao)."""

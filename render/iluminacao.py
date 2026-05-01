@@ -1,8 +1,9 @@
 import math
 import pygame
 
-from render.scanline import scanline_fill
+from render.preenchimento import scanline_fill
 from render.viewport import transformar_pontos
+from render.geometry_utils import ellipse_points
 from configs.game_config import (
     ALFA_ESCURIDAO_AMBIENTE,
     RAIO_LUZ_X,
@@ -15,13 +16,7 @@ _ambient_cache = {}
 
 
 def gerar_pontos_elipse(cx, cy, rx, ry, segmentos=56):
-    pontos = []
-    for i in range(segmentos):
-        ang = (2.0 * math.pi * i) / segmentos
-        x = int(cx + rx * math.cos(ang))
-        y = int(cy + ry * math.sin(ang))
-        pontos.append((x, y))
-    return pontos
+    return ellipse_points(cx, cy, rx, ry, segmentos)
 
 
 def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
