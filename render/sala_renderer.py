@@ -3,7 +3,7 @@ from pathlib import Path
 
 from render.poligono import desenhar_poligono
 from render.preenchimento import scanline_fill, scanline_texture
-from render.clipping import clip_polygon_sutherland_hodgman
+from render.clipping import clip_polygon_com_cohen_sutherland
 from render.viewport import transformar_pontos, world_to_viewport
 from render.superficie import escalar_superficie
 
@@ -30,7 +30,7 @@ def desenhar_item(surface, item, camera, viewport, textures, debug_clip=False):
         texture_key = None
         show_border = True
 
-    clip = clip_polygon_sutherland_hodgman(pontos, *camera)
+    clip = clip_polygon_com_cohen_sutherland(pontos, *camera)
     if len(clip) >= 3:
         if debug_clip:
             original_tela = transformar_pontos(pontos, camera, viewport)

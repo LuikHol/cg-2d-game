@@ -7,7 +7,7 @@ from render.superficie import escalar_superficie, espelhar_x
 from render.pixel import setPixel
 from render.preenchimento import scanline_fill, scanline_texture
 from render.viewport import transformar_pontos
-from render.clipping import clip_polygon_sutherland_hodgman
+from render.clipping import clip_polygon_com_cohen_sutherland
 from render.geometry_utils import ellipse_points
 from objects.components import RigidbodyComponent, ColliderComponent, resolve_axis_aligned_motion
 
@@ -434,7 +434,7 @@ class ObjetoJogador:
 
         # Fallback para o desenho poligonal anterior.
         pontos = self.get_pontos()
-        clip = clip_polygon_sutherland_hodgman(pontos, *camera)
+        clip = clip_polygon_com_cohen_sutherland(pontos, *camera)
         if len(clip) >= 3:
             tela = transformar_pontos(clip, camera, viewport)
             if textura:
