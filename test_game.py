@@ -21,7 +21,7 @@ from objects.interaction_manager import GerenciadorInteracao
 from objects.room_manager import RoomManager
 from world.rooms import construir_salas
 from objects.decoracoes import desenhar_coroa_estatua
-from render.sala_renderer import desenhar_sala, desenhar_foreground
+from render.sala_renderer import desenhar_sala, desenhar_foreground, desenhar_background_com_tiling, desenhar_item
 from render.iluminacao import desenhar_iluminacao
 from render.viewport import transformar_pontos, world_to_viewport, atualizar_camera_player_follow
 from render.poligono import desenhar_poligono
@@ -203,7 +203,10 @@ while running:
             player.x,
             player.y,
             camera_bounds,
-            (LARGURA_MUNDO, ALTURA_MUNDO),
+            (
+                dados_room.get("camera_viewport_width", LARGURA_MUNDO),
+                dados_room.get("camera_viewport_height", ALTURA_MUNDO),
+            ),
         )
     else:
         camera = (0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
@@ -223,7 +226,17 @@ while running:
     screen.fill((10, 10, 10))
 
     dados_room = room_manager.get_room()
-    desenhar_sala(screen, dados_room, camera, viewport, textures, debug_clip)
+
+    # Corredor usa tiling + polígonos de parede
+    if dados_room.get("nome") == "corredor":
+        desenhar_background_com_tiling(screen, dados_room, camera, viewport)
+        for item in dados_room["poligonos"]:
+            desenhar_item(screen, item, camera, viewport, textures, debug_clip)
+        for item in dados_room["portas_visuais"]:
+            desenhar_item(screen, item, camera, viewport, textures, debug_clip)
+    else:
+        desenhar_sala(screen, dados_room, camera, viewport, textures, debug_clip)
+    
     player.draw(screen, camera, viewport, textura)
     desenhar_foreground(screen, dados_room, camera, viewport, textures, debug_clip)
     if debug_light:
