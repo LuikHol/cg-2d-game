@@ -2,8 +2,7 @@ import pygame
 from pathlib import Path
 
 from render.poligono import desenhar_poligono
-from render.scanline import scanline_fill
-from render.textura import scanline_texture
+from render.preenchimento import scanline_fill, scanline_texture
 from render.clipping import clip_polygon_sutherland_hodgman
 from render.viewport import transformar_pontos, world_to_viewport
 from render.superficie import escalar_superficie

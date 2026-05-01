@@ -1,9 +1,8 @@
 import math
 import pygame
 from render.poligono import desenhar_poligono
-from render.scanline import scanline_fill
+from render.preenchimento import scanline_fill
 from render.viewport import world_to_viewport as mundo_para_viewport
-from render.textura import scanline_texture
 from render.superficie import escalar_superficie
 
 FONTE_UI_NOME = "timesnewroman"
@@ -11,7 +10,7 @@ FONTE_UI_TAMANHO_PROMPT = 15
 FONTE_UI_TAMANHO_MUNDO = 20
 FONTE_UI_TAMANHO_TITULO_PAPEL = 38
 FONTE_UI_TAMANHO_CORPO_PAPEL = 20
-
+from render.preenchimento import scanline_texture
 
 class GerenciadorInteracao:
     """Gerencia prompts, estrelas de interacao e leitura de papeis."""

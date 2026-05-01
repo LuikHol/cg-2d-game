@@ -18,7 +18,7 @@ from configs.menu_config import (
     TITULO_MENU,
 )
 from render.pixel import setPixel
-from render.scanline import scanline_fill
+from render.preenchimento import scanline_fill
 
 ANIMACOES_MENU = None
 CACHE_COROAS = {}
