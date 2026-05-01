@@ -215,6 +215,9 @@ class TestGameApp:
         dx, dy = self.processar_input(keys)
 
         dados_room = self.room_manager.get_room()
+        
+        if self.gerenciador_interacao.papel_aberto:
+            dx, dy = 0, 0
         self.player.mover(dx, dy, self.dt, dados_room["colliders"])
         self.room_manager.update(self.player, self.dt)
 
