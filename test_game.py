@@ -392,11 +392,29 @@ class TestGameApp:
         else:
             desenhar_sala(self.screen, dados_room, self.camera, self.viewport, self.textures, self.debug["clip"])
 
+        desenhar_foreground(
+            self.screen,
+            dados_room,
+            self.camera,
+            self.viewport,
+            self.textures,
+            self.debug["clip"],
+            draw_above_player=False,
+        )
+
         if self.perseguidora_ativa and self.perseguidora is not None and self.room_manager.current_room == "sala_2":
             self.perseguidora.draw(self.screen, self.camera, self.viewport)
 
         self.player.draw(self.screen, self.camera, self.viewport, self.textura)
-        desenhar_foreground(self.screen, dados_room, self.camera, self.viewport, self.textures, self.debug["clip"])
+        desenhar_foreground(
+            self.screen,
+            dados_room,
+            self.camera,
+            self.viewport,
+            self.textures,
+            self.debug["clip"],
+            draw_above_player=True,
+        )
         if self.debug["light"]:
             desenhar_iluminacao(self.screen, self.player, dados_room, self.camera, self.viewport)
 
