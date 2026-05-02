@@ -42,6 +42,7 @@ def criar_corredor():
     # Layout do corredor:
     # Teto y=0..180, chão y=600..750, corredor passável y=180..600
     # Porta sala_1: x=460..540, abertura vertical menor (y=130..180)
+    # Quarto da rainha: y=350..430 na parede esquerda
     # Porta sala_2: y=350..430 (abertura vertical menor)
     # Biblioteca: x=130..210, abertura vertical menor (y=600..680)
 
@@ -57,8 +58,9 @@ def criar_corredor():
     # Tampa inferior do vão da biblioteca para reduzir altura vertical da abertura
     parede_chao_centro = [(130, 680), (210, 680), (210, 750), (130, 750)]
 
-    # Parede lateral esq fechada
-    parede_esq = [(0, 180), (12, 180), (12, 600), (0, 600)]
+    # Parede lateral esq com vao para o quarto da rainha
+    parede_esq_cima = [(0, 180), (12, 180), (12, 350), (0, 350)]
+    parede_esq_baixo = [(0, 430), (12, 430), (12, 600), (0, 600)]
 
     # Parede lateral dir com vão para porta sala_2
     parede_dir_cima  = [(1588, 180), (1600, 180), (1600, 350), (1588, 350)]
@@ -85,7 +87,8 @@ def criar_corredor():
             parede(parede_chao_esq),
             parede(parede_chao_dir),
             parede(parede_chao_centro),
-            parede(parede_esq),
+            parede(parede_esq_cima),
+            parede(parede_esq_baixo),
             parede(parede_dir_cima),
             parede(parede_dir_baixo),
             inter_placa.como_item_desenhavel(),
@@ -110,7 +113,8 @@ def criar_corredor():
             colisao_estatica(0, 600, 130, 150),
             colisao_estatica(210, 600, 1390, 150),
             colisao_estatica(130, 680, 80, 70),
-            colisao_estatica(0, 180, 12, 420),
+            colisao_estatica(0, 180, 12, 170),
+            colisao_estatica(0, 430, 12, 170),
             colisao_estatica(1588, 180, 12, 170),
             colisao_estatica(1588, 430, 12, 170),
         ],
@@ -119,6 +123,11 @@ def criar_corredor():
                 "trigger": pygame.Rect(460, 130, 80, 20),
                 "target": "sala_1",
                 "spawn": (500, 650),
+            },
+            {
+                "trigger": pygame.Rect(0, 350, 12, 80),
+                "target": "quarto_rainha",
+                "spawn": (935, 430),
             },
             {
                 "trigger": pygame.Rect(1588, 350, 12, 80),
