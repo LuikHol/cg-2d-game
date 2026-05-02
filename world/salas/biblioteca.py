@@ -19,7 +19,6 @@ def criar_biblioteca():
     porta_y_topo = sala_y_min
 
     bilhete_biblioteca = [(250, 560), (330, 560), (330, 590), (250, 590)]
-    livro_antigo = [(350, 400), (400, 400), (400, 430), (350, 430)]
 
     inter_bilhete = ObjetoInterativo(
         "bilhete_biblioteca",
@@ -33,28 +32,11 @@ def criar_biblioteca():
         },
     )
 
-    inter_livro = ObjetoInterativo(
-        "livro_antigo",
-        livro_antigo,
-        (120, 80, 40),
-        (160, 110, 55),
-        {
-            "type": "paper",
-            "title": "Catalogo",
-            "lines": [
-                "Ala sul: tomos perdidos",
-                "Ala leste: proibido entrar",
-                "Use E para fechar",
-            ],
-        },
-        texture_key="paper",
-        show_border=True,
-    )
-
     return {
         "nome": "biblioteca",
         "background_texture": "texturas/cenario/biblioteca/biblioteca.png",
         "background_zoom": 1.0,
+        "viewport_margin": 50,
         "poligonos": [
             poligono_de_chao(
                 [
@@ -67,29 +49,16 @@ def criar_biblioteca():
                 (92, 62, 42),
             ),
             inter_bilhete.como_item_desenhavel(),
-            inter_livro.como_item_desenhavel(),
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete, inter_livro],
+        "interactables": [inter_bilhete],
         "foreground": [
-            foreground_img("texturas/objetos/poltrona.png", 158, 450, 167, 197, escala=1.6),
         ],
         "lights": [
-            {"x": 310, "y": 180, "rx": 54, "ry": 42, "steps": 24},
         ],
         "colliders": [
             # Parede superior com vao da porta ao centro
             colisao_estatica(1, 8, 443, 225),
-            colisao_estatica(561, 8, 443, 225),
-            # Parede lateral esquerda
-            colisao_estatica(0, 0, 12, 746),
-            # Parede lateral direita
-            colisao_estatica(985, 5, 10, 739),
-            # Parede inferior
-            colisao_estatica(0, 715, 1000, 29),
-            # Obstaculos internos simples
-            colisao_estatica(172, 367, 163, 175),
-            colisao_estatica(700, 180, 111, 237),
         ],
         "transicoes": [
             {
