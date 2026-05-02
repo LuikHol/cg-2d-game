@@ -2,7 +2,7 @@ import pygame
 
 from objects.components import ComponenteColisaoEstatica
 from objects.objeto_interagivel import ObjetoInterativo
-from world.salas.utils import poligono_de_chao
+from world.salas.utils import foreground_img, poligono_de_chao
 
 
 def criar_corredor():
@@ -23,32 +23,32 @@ def criar_corredor():
     )
 
     # Layout do corredor:
-    # Teto y=0..250, chão y=500..750, corredor passável y=250..500
-    # Porta sala_1: x=460..540, abertura vertical menor (y=170..250)
+    # Teto y=0..180, chão y=600..750, corredor passável y=180..600
+    # Porta sala_1: x=460..540, abertura vertical menor (y=130..180)
     # Porta sala_2: y=350..430 (abertura vertical menor)
-    # Biblioteca: x=120..220, abertura vertical menor (y=500..580)
+    # Biblioteca: x=130..210, abertura vertical menor (y=600..680)
 
     # Teto em duas partes com vão para porta sala_1
-    parede_teto_esq = [(0, 0), (460, 0), (460, 250), (0, 250)]
-    parede_teto_dir = [(540, 0), (1600, 0), (1600, 250), (540, 250)]
+    parede_teto_esq = [(0, 0), (460, 0), (460, 180), (0, 180)]
+    parede_teto_dir = [(540, 0), (1600, 0), (1600, 180), (540, 180)]
     # Tampa superior do vão da sala_1 para reduzir altura vertical da abertura
-    parede_teto_centro = [(460, 0), (540, 0), (540, 170), (460, 170)]
+    parede_teto_centro = [(460, 0), (540, 0), (540, 130), (460, 130)]
 
     # Chão com vao no canto inferior esquerdo para a biblioteca
-    parede_chao_esq = [(0, 500), (120, 500), (120, 750), (0, 750)]
-    parede_chao_dir = [(220, 500), (1600, 500), (1600, 750), (220, 750)]
+    parede_chao_esq = [(0, 600), (130, 600), (130, 750), (0, 750)]
+    parede_chao_dir = [(210, 600), (1600, 600), (1600, 750), (210, 750)]
     # Tampa inferior do vão da biblioteca para reduzir altura vertical da abertura
-    parede_chao_centro = [(120, 580), (220, 580), (220, 750), (120, 750)]
+    parede_chao_centro = [(130, 680), (210, 680), (210, 750), (130, 750)]
 
     # Parede lateral esq fechada
-    parede_esq = [(0, 250), (12, 250), (12, 500), (0, 500)]
+    parede_esq = [(0, 180), (12, 180), (12, 600), (0, 600)]
 
     # Parede lateral dir com vão para porta sala_2
-    parede_dir_cima  = [(1588, 250), (1600, 250), (1600, 350), (1588, 350)]
-    parede_dir_baixo = [(1588, 430), (1600, 430), (1600, 500), (1588, 500)]
+    parede_dir_cima  = [(1588, 180), (1600, 180), (1600, 350), (1588, 350)]
+    parede_dir_baixo = [(1588, 430), (1600, 430), (1600, 600), (1588, 600)]
 
-    COR_PAREDE = (30, 25, 35)
-    COR_BORDA  = (55, 45, 60)
+    COR_PAREDE = (30, 30, 35)
+    COR_BORDA  = (55, 30, 60)
 
     def parede(pts):
         return {"polygon": pts, "fill_color": COR_PAREDE, "border_color": COR_BORDA, "show_border": True}
@@ -58,6 +58,7 @@ def criar_corredor():
         "background_texture": "texturas/cenario/chaointeiro.png",
         "background_bounds": (0, 0, 1600, 750),
         "camera_bounds": (0, 0, 1600, 750),
+        "viewport_margin": 100,
         "background_scale": 1.5,
         "tile_world_width": 1600,
         "poligonos": [
@@ -74,20 +75,25 @@ def criar_corredor():
         ],
         "portas_visuais": [],
         "interactables": [inter_placa],
+                "foreground": [
+            # Poltrona: ajuste so o valor de escala para mudar o tamanho.
+            # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
+            foreground_img("texturas/objetos/urso.png", 1321, 76, 92, 201, escala=2.5),
+        ],
         "colliders": [
-            colisao_estatica(0, 0, 460, 250),
-            colisao_estatica(540, 0, 1060, 250),
-            colisao_estatica(460, 0, 80, 170),
-            colisao_estatica(0, 500, 120, 250),
-            colisao_estatica(220, 500, 1380, 250),
-            colisao_estatica(120, 580, 100, 170),
-            colisao_estatica(0, 250, 12, 250),
-            colisao_estatica(1588, 250, 12, 100),
-            colisao_estatica(1588, 430, 12, 70),
+            colisao_estatica(0, 0, 460, 180),
+            colisao_estatica(540, 0, 1060, 180),
+            colisao_estatica(460, 0, 80, 130),
+            colisao_estatica(0, 600, 130, 150),
+            colisao_estatica(210, 600, 1390, 150),
+            colisao_estatica(130, 680, 80, 70),
+            colisao_estatica(0, 180, 12, 420),
+            colisao_estatica(1588, 180, 12, 170),
+            colisao_estatica(1588, 430, 12, 170),
         ],
         "transicoes": [
             {
-                "trigger": pygame.Rect(460, 170, 80, 20),
+                "trigger": pygame.Rect(460, 130, 80, 20),
                 "target": "sala_1",
                 "spawn": (500, 650),
             },
@@ -97,7 +103,7 @@ def criar_corredor():
                 "spawn": (40, 375),
             },
             {
-                "trigger": pygame.Rect(120, 500, 100, 20),
+                "trigger": pygame.Rect(130, 600, 80, 20),
                 "target": "biblioteca",
                 "spawn": (500, 260),
             },

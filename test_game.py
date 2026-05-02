@@ -19,11 +19,12 @@ from configs.game_config import (
 from objects.player_object import ObjetoJogador
 from objects.interaction_manager import GerenciadorInteracao
 from objects.room_manager import RoomManager
+from objects.perseguidora_object import ObjetoPerseguidora
 from world.rooms import construir_salas
 from objects.decoracoes import desenhar_coroa_estatua
 from render.sala_renderer import desenhar_sala, desenhar_foreground, desenhar_background_com_tiling, desenhar_item
 from render.iluminacao import desenhar_iluminacao
-from render.viewport import transformar_pontos, world_to_viewport, atualizar_camera_player_follow
+from render.viewport import transformar_pontos, atualizar_camera_player_follow
 from render.poligono import desenhar_poligono
 from objects.inventario import Inventario
 from musica_loop import iniciar_musica_loop, trocar_musica_se_existir, parar_musica
@@ -51,14 +52,17 @@ class TestGameApp:
             textura_papel=self.textura,
             inventario=self.inventario,
         )
+        self.perseguidora = None
+        self.perseguidora_ativa = False
+        self.alerta_perseguicao_tempo = 0.0
+        self.tempo_para_spawn_perseguidora = 5.0
+        self.tempo_andando_sala2 = 0.0
+        self.perseguidora_agendada = False
+        self.ultima_posicao_player_sala2 = (float(self.player.x), float(self.player.y))
 
         self.camera = (0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
-        self.viewport = (
-            MARGEM_VIEWPORT,
-            MARGEM_VIEWPORT,
-            LARGURA_TELA - MARGEM_VIEWPORT,
-            ALTURA_TELA - MARGEM_VIEWPORT,
-        )
+        self.default_viewport_margin = MARGEM_VIEWPORT
+        self.viewport = (0, 0, LARGURA_TELA, ALTURA_TELA)
         self.textures = {"paper": self.textura}
 
         self.fonte = pygame.font.SysFont(None, TAMANHO_FONTE_HUD)
@@ -75,6 +79,22 @@ class TestGameApp:
             "ultimo_snippet": "",
         }
         self.last_room_for_music = self.room_manager.current_room
+        self.atualizar_viewport_por_sala(self.room_manager.get_room())
+
+    def atualizar_viewport_por_sala(self, dados_room):
+        if dados_room.get("viewport_fullscreen", False):
+            self.viewport = (0, 0, LARGURA_TELA, ALTURA_TELA)
+            return
+
+        margem = int(dados_room.get("viewport_margin", self.default_viewport_margin))
+        margem_max = max(0, (min(LARGURA_TELA, ALTURA_TELA) // 2) - 1)
+        margem = max(0, min(margem, margem_max))
+        self.viewport = (
+            margem,
+            margem,
+            LARGURA_TELA - margem,
+            ALTURA_TELA - margem,
+        )
 
     def tela_para_mundo(self, pos_tela):
         vx0, vy0, vx1, vy1 = self.viewport
@@ -120,6 +140,50 @@ class TestGameApp:
 
         return dx, dy
 
+    def _spawn_perseguidora_atras_do_player(self, dados_room):
+        """Cria a perseguidora atras do jogador."""
+        direcoes = {
+            "left": (-1.0, 0.0),
+            "right": (1.0, 0.0),
+            "up": (0.0, -1.0),
+            "down": (0.0, 1.0),
+        }
+        frente = direcoes.get(self.player.direcao, (1.0, 0.0))
+        atras = (-frente[0], -frente[1])
+
+        origem_x = self.player.x
+        origem_y = self.player.y
+        distancias = [260.0, 320.0, 380.0, 220.0]
+
+        # Tenta alguns offsets ate achar uma posicao valida sem colisao com paredes.
+        spawn_x = origem_x + (atras[0] * distancias[0])
+        spawn_y = origem_y + (atras[1] * distancias[0])
+        tamanho_colisor = max(24.0, self.player.tamanho * 1.5)
+
+        for dist in distancias:
+            candidato_x = origem_x + (atras[0] * dist)
+            candidato_y = origem_y + (atras[1] * dist)
+            candidato = pygame.Rect(
+                int(round(candidato_x - tamanho_colisor / 2.0)),
+                int(round(candidato_y - tamanho_colisor / 2.0)),
+                int(round(tamanho_colisor)),
+                int(round(tamanho_colisor)),
+            )
+            if not any(candidato.colliderect(col.get_rect()) for col in dados_room.get("colliders", [])):
+                spawn_x = candidato_x
+                spawn_y = candidato_y
+                break
+
+        bounds = dados_room.get("camera_bounds", (0, 0, LARGURA_MUNDO, ALTURA_MUNDO))
+        bx0, by0, bx1, by1 = bounds
+        spawn_x = max(float(bx0 + 24), min(float(spawn_x), float(bx1 - 24)))
+        spawn_y = max(float(by0 + 24), min(float(spawn_y), float(by1 - 24)))
+
+        self.perseguidora = ObjetoPerseguidora(spawn_x, spawn_y, tamanho=max(20, self.player.tamanho + 2))
+        self.perseguidora_ativa = True
+        self.perseguidora_agendada = False
+        self.alerta_perseguicao_tempo = 3.0
+
     def desenhar_hud(self):
         texto = self.fonte.render(
             f"sala: {self.room_manager.current_room} | pos: ({int(self.player.x)}, {int(self.player.y)}) | WASD | V: clip {'on' if self.debug['clip'] else 'off'} | L: luz {'on' if self.debug['light'] else 'off'}",
@@ -135,6 +199,17 @@ class TestGameApp:
             self.screen.blit(texto_inv, (largura_tela - texto_inv.get_width() - 10, 10))
 
         if not self.debug["pos"]:
+            if self.perseguidora_ativa and self.room_manager.current_room == "sala_2":
+                texto_alerta = "FUJA! A perseguidora esta te seguindo."
+                if self.alerta_perseguicao_tempo > 0.0:
+                    texto_alerta = "PERIGO! Ela apareceu atras de voce!"
+                alerta = self.fonte.render(texto_alerta, True, (255, 92, 92))
+                self.screen.blit(alerta, (10, 34))
+            elif self.perseguidora_agendada and self.room_manager.current_room == "sala_2":
+                restante = max(0.0, self.tempo_para_spawn_perseguidora - self.tempo_andando_sala2)
+                texto_alerta = f"Sinto algo se aproximando... continue correndo ({restante:.1f}s)"
+                alerta = self.fonte.render(texto_alerta, True, (255, 190, 110))
+                self.screen.blit(alerta, (10, 34))
             return
 
         mouse_world = self.tela_para_mundo(pygame.mouse.get_pos())
@@ -216,10 +291,24 @@ class TestGameApp:
 
         dados_room = self.room_manager.get_room()
         self.player.mover(dx, dy, self.dt, dados_room["colliders"])
-        self.room_manager.update(self.player, self.dt)
+        transicao = self.room_manager.update(self.player, self.dt)
+
+        if transicao is not None:
+            if transicao["target"] == "sala_2":
+                self.perseguidora = None
+                self.perseguidora_ativa = False
+                self.perseguidora_agendada = True
+                self.tempo_andando_sala2 = 0.0
+                self.ultima_posicao_player_sala2 = (float(self.player.x), float(self.player.y))
+            elif transicao["source"] == "sala_2":
+                self.perseguidora = None
+                self.perseguidora_ativa = False
+                self.perseguidora_agendada = False
+                self.tempo_andando_sala2 = 0.0
 
         # Camera segue somente salas que definem bounds (ex.: corredor horizontal).
         dados_room = self.room_manager.get_room()
+        self.atualizar_viewport_por_sala(dados_room)
         camera_bounds = dados_room.get("camera_bounds")
         if camera_bounds:
             self.camera = atualizar_camera_player_follow(
@@ -247,6 +336,37 @@ class TestGameApp:
             self.last_room_for_music = current_room
 
         dados_room = self.room_manager.get_room()
+        if self.room_manager.current_room == "sala_2" and not self.perseguidora_ativa and not self.perseguidora_agendada:
+            # Fallback para casos em que o jogador inicia/retorna na sala_2 sem evento de transicao.
+            self.perseguidora_agendada = True
+            self.tempo_andando_sala2 = 0.0
+            self.ultima_posicao_player_sala2 = (float(self.player.x), float(self.player.y))
+
+        if self.room_manager.current_room == "sala_2" and self.perseguidora_agendada and not self.perseguidora_ativa:
+            atual_x = float(self.player.x)
+            atual_y = float(self.player.y)
+            ultimo_x, ultimo_y = self.ultima_posicao_player_sala2
+            desloc = ((atual_x - ultimo_x) ** 2 + (atual_y - ultimo_y) ** 2) ** 0.5
+            self.ultima_posicao_player_sala2 = (atual_x, atual_y)
+
+            # Conta tempo somente quando houve deslocamento real.
+            if desloc >= 1.0:
+                self.tempo_andando_sala2 += self.dt
+            if self.tempo_andando_sala2 >= self.tempo_para_spawn_perseguidora:
+                self._spawn_perseguidora_atras_do_player(dados_room)
+
+        if self.perseguidora_ativa and self.perseguidora is not None and self.room_manager.current_room == "sala_2":
+            self.perseguidora.atualizar(self.player.x, self.player.y, self.dt, dados_room["colliders"])
+
+            player_rect = self.player.collider.get_rect_from_center(self.player.x, self.player.y)
+            perseguidora_rect = self.perseguidora.collider.get_rect_from_center(self.perseguidora.x, self.perseguidora.y)
+            if player_rect.colliderect(perseguidora_rect):
+                # Reposiciona a perseguidora para manter a pressao sem travar o player.
+                self._spawn_perseguidora_atras_do_player(dados_room)
+
+        if self.alerta_perseguicao_tempo > 0.0:
+            self.alerta_perseguicao_tempo = max(0.0, self.alerta_perseguicao_tempo - self.dt)
+
         player_rect = self.player.collider.get_rect_from_center(self.player.x, self.player.y)
         self.gerenciador_interacao.atualizar(
             keys,
@@ -260,7 +380,7 @@ class TestGameApp:
         dados_room = self.room_manager.get_room()
 
         # Corredor usa tiling + poligonos de parede.
-        if dados_room.get("nome") == "corredor":
+        if dados_room.get("nome") in ("corredor", "sala_2"):
             desenhar_background_com_tiling(self.screen, dados_room, self.camera, self.viewport)
             for item in dados_room["poligonos"]:
                 desenhar_item(self.screen, item, self.camera, self.viewport, self.textures, self.debug["clip"])
@@ -268,6 +388,9 @@ class TestGameApp:
                 desenhar_item(self.screen, item, self.camera, self.viewport, self.textures, self.debug["clip"])
         else:
             desenhar_sala(self.screen, dados_room, self.camera, self.viewport, self.textures, self.debug["clip"])
+
+        if self.perseguidora_ativa and self.perseguidora is not None and self.room_manager.current_room == "sala_2":
+            self.perseguidora.draw(self.screen, self.camera, self.viewport)
 
         self.player.draw(self.screen, self.camera, self.viewport, self.textura)
         desenhar_foreground(self.screen, dados_room, self.camera, self.viewport, self.textures, self.debug["clip"])

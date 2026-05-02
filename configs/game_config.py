@@ -7,12 +7,11 @@ VOLUME_MUSICA = 0.5
 MUSICA_POR_SALA = {
     "sala_1": "dorminho2.mp3",
     "corredor": "dorminho2.mp3",
-    "sala_2": "dorminho2.mp3",
+    "sala_2": "dorminhogrande.mp3",
 }
 
 LARGURA_MUNDO = 1000
 ALTURA_MUNDO = 750
-ZOOM_TEXTURA_FUNDO = 1.35
 
 ALFA_ESCURIDAO_AMBIENTE = 150
 RAIO_LUZ_X = 70
