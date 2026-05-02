@@ -73,6 +73,22 @@ def get_collectible_sprite(item_name, pixel_size=1):
             "3": (250, 184, 72, 255),
         }
         surf = _desenhar_pattern(pattern, palette, tamanho_pixel)
+    elif item == "livro_laranja":
+        pattern = [
+            "0111110",
+            "1111111",
+            "1122211",
+            "1111111",
+            "1122211",
+            "1111111",
+            "0111110",
+        ]
+        palette = {
+            "0": (0, 0, 0, 0),
+            "1": (210, 100, 15, 255),
+            "2": (180, 30, 30, 255),
+        }
+        surf = _desenhar_pattern(pattern, palette, tamanho_pixel)
     else:
         raise ValueError(f"Unknown collectible sprite: {item}")
 

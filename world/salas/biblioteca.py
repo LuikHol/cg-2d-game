@@ -2,7 +2,8 @@ import pygame
 
 from objects.components import ComponenteColisaoEstatica
 from objects.objeto_interagivel import ObjetoInterativo
-from world.salas.utils import poligono_de_chao, foreground_img
+from render.collectible_sprites import get_collectible_sprite
+from world.salas.utils import poligono_de_chao, foreground_img, foreground_surface
 
 
 def criar_biblioteca():
@@ -19,6 +20,21 @@ def criar_biblioteca():
     porta_y_topo = sala_y_min
 
     bilhete_biblioteca = [(250, 560), (330, 560), (330, 590), (250, 590)]
+    sprite_livro = get_collectible_sprite("livro_laranja", pixel_size=4)
+    livro_pickup = [(318, 640), (358, 640), (358, 700), (318, 700)]
+
+    inter_livro_laranja = ObjetoInterativo(
+        "livro_laranja",
+        livro_pickup,
+        None,
+        None,
+        {
+            "type": "pickup",
+            "item": "livro_laranja",
+            "mensagem": "Voce pegou o Livro Laranja!",
+        },
+        show_border=False,
+    )
 
     inter_bilhete = ObjetoInterativo(
         "bilhete_biblioteca",
@@ -51,11 +67,12 @@ def criar_biblioteca():
             inter_bilhete.como_item_desenhavel(),
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete],
+        "interactables": [inter_bilhete, inter_livro_laranja],
         "foreground": [
             foreground_img("texturas/objetos/estante_livros1.png", 575, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/estante_livros3.png", 755, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/coala.png", 301, 520, 81, 169, escala=2.7),
+            foreground_surface(sprite_livro, 325, 612, 28, 28, escala=1.0, draw_above_player=False),
         ],
         "lights": [
         ],
