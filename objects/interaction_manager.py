@@ -143,6 +143,15 @@ class GerenciadorInteracao:
     def desenhar(self, screen, camera, viewport):
         """Renderiza estrelas, prompts, mensagens e sobreposicao de papel."""
 
+        viewport_rect = pygame.Rect(
+            viewport[0],
+            viewport[1],
+            max(0, viewport[2] - viewport[0]),
+            max(0, viewport[3] - viewport[1]),
+        )
+        old_clip = screen.get_clip()
+        screen.set_clip(viewport_rect)
+
         # Estrelas pulsantes sobre interagiveis disponiveis.
         t = pygame.time.get_ticks() / 500.0
         for objeto in self._interagiveis_visiveis:
@@ -159,9 +168,14 @@ class GerenciadorInteracao:
 
             # Surface temporaria para alpha da estrela.
             tam = int(raio * 2) + 4
+            estrela_rect = pygame.Rect(sx - tam // 2, sy - tam // 2, tam, tam)
+            if not estrela_rect.colliderect(viewport_rect):
+                continue
             surf_estrela = pygame.Surface((tam, tam), pygame.SRCALPHA)
             self._desenhar_estrela(surf_estrela, tam // 2, tam // 2, raio, raio * 0.4, 4, cor)
             screen.blit(surf_estrela, (sx - tam // 2, sy - tam // 2))
+
+        screen.set_clip(old_clip)
 
         if self.alvo_prompt and not self.mensagem_mundo:
             nome = self.alvo_prompt.name

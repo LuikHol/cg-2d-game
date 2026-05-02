@@ -179,14 +179,31 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     return True
 
 
-def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_clip=False):
+def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_clip=False, draw_above_player=None):
+    viewport_rect = pygame.Rect(
+        viewport[0],
+        viewport[1],
+        max(0, viewport[2] - viewport[0]),
+        max(0, viewport[3] - viewport[1]),
+    )
+    old_clip = surface.get_clip()
+    surface.set_clip(viewport_rect)
+
     for item in room_data.get("foreground", []):
-        if isinstance(item, dict) and "image_path" in item:
-            img_path = item["image_path"]
+        if isinstance(item, dict) and draw_above_player is not None:
+            if item.get("draw_above_player", True) != draw_above_player:
+                continue
+        if isinstance(item, dict) and ("image_path" in item or "surface" in item):
             wx, wy, ww, wh = item["rect"]
-            if img_path not in _foreground_image_cache:
-                _foreground_image_cache[img_path] = pygame.image.load(img_path).convert_alpha()
-            raw = _foreground_image_cache[img_path]
+            if "image_path" in item:
+                img_path = item["image_path"]
+                if img_path not in _foreground_image_cache:
+                    _foreground_image_cache[img_path] = pygame.image.load(img_path).convert_alpha()
+                raw = _foreground_image_cache[img_path]
+                source_key = img_path
+            else:
+                raw = item["surface"]
+                source_key = ("surface", id(raw))
             sx1, sy1 = world_to_viewport(wx, wy, camera, viewport)
             sx2, sy2 = world_to_viewport(wx + ww, wy + wh, camera, viewport)
             sw, sh = max(1, sx2 - sx1), max(1, sy2 - sy1)
@@ -196,7 +213,7 @@ def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_cl
                 escala = min(sw / max(1, raw_w), sh / max(1, raw_h))
                 tw = max(1, int(raw_w * escala))
                 th = max(1, int(raw_h * escala))
-                cache_key = (img_path, tw, th)
+                cache_key = (source_key, tw, th)
                 screen_img = _scaled_foreground_cache.get(cache_key)
                 if screen_img is None:
                     screen_img = escalar_superficie(raw, tw, th)
@@ -206,7 +223,7 @@ def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_cl
                 draw_y = sy1 + (sh - th)
                 surface.blit(screen_img, (draw_x, draw_y))
             else:
-                cache_key = (img_path, sw, sh)
+                cache_key = (source_key, sw, sh)
                 screen_img = _scaled_foreground_cache.get(cache_key)
                 if screen_img is None:
                     screen_img = escalar_superficie(raw, sw, sh)
@@ -214,6 +231,8 @@ def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_cl
                 surface.blit(screen_img, (sx1, sy1))
         else:
             desenhar_item(surface, item, camera, viewport, textures, debug_clip)
+
+    surface.set_clip(old_clip)
 
 
 def desenhar_sala(surface, room_data, camera, viewport, textures, debug_clip=False):
