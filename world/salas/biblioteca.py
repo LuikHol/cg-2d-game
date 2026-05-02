@@ -53,12 +53,36 @@ def criar_biblioteca():
         "portas_visuais": [],
         "interactables": [inter_bilhete],
         "foreground": [
+            foreground_img("texturas/objetos/estante_livros1.png", 575, 388, 189, 221, escala=1.19),
+            foreground_img("texturas/objetos/estante_livros3.png", 755, 388, 189, 221, escala=1.19),
+            foreground_img("texturas/objetos/coala.png", 301, 520, 81, 169, escala=2.7),
         ],
         "lights": [
         ],
         "colliders": [
             # Parede superior com vao da porta ao centro
             colisao_estatica(1, 8, 443, 225),
+            colisao_estatica(561, 8, 443, 225),
+            # Parede lateral esquerda
+            colisao_estatica(0, 0, 12, 746),
+            # Parede lateral direita
+            colisao_estatica(985, 5, 10, 739),
+            # Parede inferior
+            colisao_estatica(0, 715, 1000, 29),
+            # Armários 1 (topo esquerdo)
+            colisao_estatica(61, 89, 363, 218),
+            # Armários 2 (lateral esquerda)
+            colisao_estatica(14, 91, 47, 505),
+            # Armários 3 (topo direito)
+            colisao_estatica(570, 98, 418, 218),
+            # Armários 4 (lateral direita)
+            colisao_estatica(936, 97, 52, 509),
+            # Armários 5 (centro-baixo direito)
+            colisao_estatica(568, 540, 417, 76),
+            # Estátua coala
+            colisao_estatica(307, 580, 68, 90),
+            # Mesa
+            colisao_estatica(153, 357, 130, 143),
         ],
         "transicoes": [
             {
