@@ -60,6 +60,8 @@ class GerenciadorInteracao:
                 if nome_item and self.inventario.tem(nome_item):
                     continue
 
+            # Circulos do tapete preenchidos continuam visiveis para permitir retirar o item.
+
             self._interagiveis_visiveis.append(objeto)
 
             if componente.pode_interagir(retangulo_ator):
@@ -105,6 +107,29 @@ class GerenciadorInteracao:
             self.mensagem_mundo = acao.get("mensagem", f"Pegou {nome_item}!")
             self.pos_mensagem_mundo = obj.get_center()
             self.tempo_mensagem_mundo = 2.5
+            return
+
+        if tipo_acao == "place_item":
+            from objects import puzzle_state
+            slot = acao.get("slot", -1)
+            # Slot preenchido: devolve o item ao inventario.
+            if puzzle_state.slot_preenchido(slot):
+                item_devolvido = puzzle_state.retirar_item(slot)
+                if item_devolvido and self.inventario:
+                    self.inventario.adicionar(item_devolvido)
+                return
+            # Slot vazio: usa o item selecionado no HUD (ou primeiro disponivel).
+            item_na_mao = getattr(self, "item_em_mao", None)
+            if not item_na_mao or not (self.inventario and self.inventario.tem(item_na_mao)):
+                item_na_mao = next(
+                    (i for i in puzzle_state.get_ordem() if self.inventario and self.inventario.tem(i)),
+                    None,
+                )
+            if item_na_mao and puzzle_state.colocar_item(slot, item_na_mao):
+                self.inventario.remover(item_na_mao)
+                self.mensagem_mundo = acao.get("mensagem_ok", "Item colocado!")
+                self.pos_mensagem_mundo = obj.get_center()
+                self.tempo_mensagem_mundo = 2.5
             return
 
         if tipo_acao == "paper":

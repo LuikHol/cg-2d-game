@@ -2,8 +2,6 @@ import pygame
 
 from objects.components import ComponenteColisaoEstatica
 from objects.objeto_interagivel import ObjetoInterativo
-from world.salas.utils import poligono_de_chao
-
 
 def criar_quarto_rainha():
     colisao_estatica = ComponenteColisaoEstatica
@@ -24,6 +22,39 @@ def criar_quarto_rainha():
         },
     )
 
+    # Três círculos do tapete – ordem horária: topo=coroa, direita=livro, esquerda=pote.
+    circulo_coroa = [(449, 314), (484, 314), (484, 349), (449, 349)]
+    circulo_livro  = [(621, 474), (656, 474), (656, 509), (621, 509)]
+    circulo_pote   = [(272, 474), (307, 474), (307, 509), (272, 509)]
+
+    inter_coroa_tapete = ObjetoInterativo(
+        "circulo do tapete", circulo_coroa, None, None,
+        {
+            "type": "place_item",
+            "slot": 0,
+            "mensagem_ok": "Item depositado no tapete!",
+        },
+        show_border=False,
+    )
+    inter_livro_tapete = ObjetoInterativo(
+        "circulo do tapete", circulo_livro, None, None,
+        {
+            "type": "place_item",
+            "slot": 1,
+            "mensagem_ok": "Item depositado no tapete!",
+        },
+        show_border=False,
+    )
+    inter_pote_tapete = ObjetoInterativo(
+        "circulo do tapete", circulo_pote, None, None,
+        {
+            "type": "place_item",
+            "slot": 2,
+            "mensagem_ok": "Item depositado no tapete!",
+        },
+        show_border=False,
+    )
+
     return {
         "nome": "quarto_rainha",
         "background_texture": "texturas/cenario/quarto_rainha/quartorainha.png",
@@ -32,7 +63,7 @@ def criar_quarto_rainha():
         "poligonos": [
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete],
+        "interactables": [inter_bilhete, inter_coroa_tapete, inter_livro_tapete, inter_pote_tapete],
         "foreground": [
         ],
         "lights": [

@@ -2,13 +2,11 @@ import pygame
 
 from objects.components import ComponenteColisaoEstatica
 from objects.objeto_interagivel import ObjetoInterativo
-from render.collectible_sprites import get_collectible_sprite
-from world.salas.utils import foreground_img, foreground_surface, poligono_de_chao
+from world.salas.utils import foreground_img, poligono_de_chao
 
 
 def criar_corredor():
     colisao_estatica = ComponenteColisaoEstatica
-    sprite_pote_mel = get_collectible_sprite("pote_mel", pixel_size=1)
 
     placa_corredor = [(470, 355), (530, 355), (530, 395), (470, 395)]
     # Area de interacao na base do urso para manter a estrela na posicao anterior.
@@ -99,7 +97,6 @@ def criar_corredor():
             # Poltrona: ajuste so o valor de escala para mudar o tamanho.
             # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
             foreground_img("texturas/objetos/urso.png", 1321, 76, 92, 201, escala=2.5, draw_above_player=False),
-            foreground_surface(sprite_pote_mel, 1355, 118, 25, 18, escala=1.0, draw_above_player=False),
         ],
         "lights": [
             {"x": 1341, "y": 127, "rx": 55, "ry": 68, "steps": 24},
@@ -117,6 +114,8 @@ def criar_corredor():
             colisao_estatica(0, 430, 12, 170),
             colisao_estatica(1588, 180, 12, 170),
             colisao_estatica(1588, 430, 12, 170),
+            # Porta sala_2 (removida dinamicamente quando puzzle e resolvido)
+            colisao_estatica(1588, 350, 12, 80),
         ],
         "transicoes": [
             {

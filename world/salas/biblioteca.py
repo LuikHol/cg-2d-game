@@ -72,7 +72,6 @@ def criar_biblioteca():
             foreground_img("texturas/objetos/estante_livros1.png", 575, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/estante_livros3.png", 755, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/coala.png", 301, 520, 81, 169, escala=2.7),
-            foreground_surface(sprite_livro, 325, 612, 28, 28, escala=1.0, draw_above_player=False),
         ],
         "lights": [
         ],

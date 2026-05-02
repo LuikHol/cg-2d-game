@@ -22,9 +22,23 @@ class InventarioHUD:
         self.aberto = False
         self.largura = largura
         self.altura = altura
+        self.indice_selecionado = 0
 
     def alternar(self):
         self.aberto = not self.aberto
+
+    def mover_selecao(self, delta, inventario):
+        itens = inventario.listar() if inventario else []
+        if not itens:
+            return
+        self.indice_selecionado = (self.indice_selecionado + delta) % len(itens)
+
+    def get_item_selecionado(self, inventario):
+        itens = inventario.listar() if inventario else []
+        if not itens:
+            return None
+        self.indice_selecionado = min(self.indice_selecionado, len(itens) - 1)
+        return itens[self.indice_selecionado]
 
     def desenhar_hint(self, surface, viewport=None):
         vx0, vy0 = (10, 10)
@@ -61,8 +75,15 @@ class InventarioHUD:
             vazio = self.fonte.render("(vazio)", True, (170, 170, 170))
             surface.blit(vazio, (x + 14, y + 48))
         else:
+            self.indice_selecionado = min(self.indice_selecionado, len(itens) - 1)
             linha_y = y + 48
-            for item in itens[:7]:
-                texto_item = self.fonte.render(f"- {item}", True, (235, 235, 235))
+            for idx, item in enumerate(itens[:7]):
+                selecionado = idx == self.indice_selecionado
+                cor = (255, 240, 100) if selecionado else (235, 235, 235)
+                prefixo = "> " if selecionado else "  "
+                texto_item = self.fonte.render(f"{prefixo}{item}", True, cor)
                 surface.blit(texto_item, (x + 14, linha_y))
                 linha_y += 24
+
+        dica = self.fonte.render("W/S: selecionar", True, (150, 150, 150))
+        surface.blit(dica, (x + 14, y + self.altura - 28))
