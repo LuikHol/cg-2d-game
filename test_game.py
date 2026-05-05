@@ -1,5 +1,6 @@
 ﻿import pygame
 import sys
+from efeitos_sonoros import tocar_efeito_se_existir
 from configs.game_config import (
     ALTURA_MUNDO,
     ALTURA_TELA,
@@ -302,6 +303,10 @@ class TestGameApp:
         if not self._sala2_desbloqueada:
             from objects import puzzle_state
             if puzzle_state.tapete_resolvido():
+                tocar_efeito_se_existir("puzzle_resolvido.mp3")
+                self.gerenciador_interacao.mensagem_mundo = "Uma porta foi destrancada."
+                self.gerenciador_interacao.pos_mensagem_mundo = (int(self.player.x), int(self.player.y) - 40)
+                self.gerenciador_interacao.tempo_mensagem_mundo = 3.0
                 self.room_manager.unlock_room("sala_2")
                 self._sala2_desbloqueada = True
                 # Remove o collider de porta do corredor.

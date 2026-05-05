@@ -1,5 +1,6 @@
 import math
 import pygame
+from efeitos_sonoros import tocar_efeito_se_existir
 from render.poligono import desenhar_poligono
 from render.preenchimento import scanline_fill
 from render.viewport import world_to_viewport as mundo_para_viewport
@@ -26,6 +27,7 @@ class GerenciadorInteracao:
         self.textura_papel = textura_papel
         self.inventario = inventario
         self._texture_cache = {}
+        self._pickups_coletados = set()
 
         # Estado de mensagens e prompt
         self.alvo_prompt = None
@@ -55,9 +57,9 @@ class GerenciadorInteracao:
             componente = objeto.component
 
             # Nao exibe itens de pickup que ja foram coletados.
-            if componente.acao.get("type") == "pickup" and self.inventario:
+            if componente.acao.get("type") == "pickup":
                 nome_item = componente.acao.get("item")
-                if nome_item and self.inventario.tem(nome_item):
+                if nome_item in self._pickups_coletados:
                     continue
 
             # Circulos do tapete preenchidos continuam visiveis para permitir retirar o item.
@@ -102,8 +104,12 @@ class GerenciadorInteracao:
 
         if tipo_acao == "pickup":
             nome_item = acao.get("item")
+            if nome_item in self._pickups_coletados:
+                return
             if nome_item and self.inventario:
                 self.inventario.adicionar(nome_item)
+                self._pickups_coletados.add(nome_item)
+                tocar_efeito_se_existir("pegar_item.mp3")
             self.mensagem_mundo = acao.get("mensagem", f"Pegou {nome_item}!")
             self.pos_mensagem_mundo = obj.get_center()
             self.tempo_mensagem_mundo = 2.5
@@ -127,6 +133,7 @@ class GerenciadorInteracao:
                 )
             if item_na_mao and puzzle_state.colocar_item(slot, item_na_mao):
                 self.inventario.remover(item_na_mao)
+                tocar_efeito_se_existir("colocar_item.mp3")
                 self.mensagem_mundo = acao.get("mensagem_ok", "Item colocado!")
                 self.pos_mensagem_mundo = obj.get_center()
                 self.tempo_mensagem_mundo = 2.5
