@@ -16,17 +16,17 @@ Projeto desenvolvido para a disciplina de Computação Gráfica, consistindo em 
 
 ## Execução
 
-###Pré requisitos
+### Pré requisitos
 Python
 pygame
 
 [Passos aqui de como compilar e executar]
 
-###Vídeo demonstrativo do jogo rodando
+### Vídeo demonstrativo do jogo rodando
 
-####Versão sem Spoiler
+#### Versão sem Spoiler
 Anda pelas salas vendo os itens e mas não resolve o puzzle nem abre a porta
 
-####Versão com spoiler
+#### Versão com spoiler
 Joga o jogo do começo ao fim normalmente
 
