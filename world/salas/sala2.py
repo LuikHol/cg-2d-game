@@ -84,7 +84,7 @@ def criar_sala2():
 
     return {
         "nome": "sala_2",
-        "background_texture": "texturas/cenario/chaointeiro.png",
+        "background_texture": "texturas/cenario/chaocorredor2.png",
         "background_bounds": (0, 0, largura_sala, 750),
         "camera_bounds": (0, 0, largura_sala, 750),
         "camera_viewport_width": 1000,
