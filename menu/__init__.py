@@ -1,3 +1,3 @@
-from menu.main_menu import menu_principal
+from menu.menu_principal import menu_principal
 
 __all__ = ["menu_principal"]

@@ -8,8 +8,8 @@ from render.pixel import setPixel
 from render.preenchimento import scanline_fill, scanline_texture
 from render.viewport import transformar_pontos
 from render.clipping import clip_polygon_com_cohen_sutherland
-from render.geometry_utils import ellipse_points
-from objects.components import RigidbodyComponent, ColliderComponent, resolve_axis_aligned_motion
+from render.utils_geometrias import pontos_elipse
+from objetos.componentes import ComponenteRigidbody, ComponenteColisao, resolver_movimento_alinhado
 
 
 class ObjetoJogador:
@@ -23,11 +23,11 @@ class ObjetoJogador:
 
         # Fisicas basicas.
         self.velocidade = 250  # unidades de mundo por segundo
-        self.rigidbody = RigidbodyComponent()
-        self.collider = ColliderComponent(tamanho * 1.4, tamanho * 1.4)
+        self.rigidbody = ComponenteRigidbody()
+        self.collider = ComponenteColisao(tamanho * 1.4, tamanho * 1.4)
 
         # Estado de movimento e animacao.
-        self.direcao = "right"   # right | left | up | down
+        self.direcao = "direita"   # direita | esquerda | cima | baixo
         self.movendo = False
         self.anim_fps = 9.0
         self.tempo_animacao = 0.0
@@ -59,10 +59,10 @@ class ObjetoJogador:
             )
 
             self.animacoes = {
-                "down": quadros_baixo,
-                "up": quadros_cima,
-                "right": quadros_direita,
-                "left": quadros_esquerda,
+                "baixo": quadros_baixo,
+                "cima": quadros_cima,
+                "direita": quadros_direita,
+                "esquerda": quadros_esquerda,
             }
             self.quantidade_frames = 4
             return
@@ -129,10 +129,10 @@ class ObjetoJogador:
             )
 
             self.animacoes = {
-                "down": quadros_baixo,
-                "up": quadros_cima,
-                "right": quadros_direita,
-                "left": quadros_esquerda,
+                "baixo": quadros_baixo,
+                "cima": quadros_cima,
+                "direita": quadros_direita,
+                "esquerda": quadros_esquerda,
             }
             self.quantidade_frames = 4
         else:
@@ -162,10 +162,10 @@ class ObjetoJogador:
             quadros_base = quadros_base_preparados
             quadros_base_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_base]
             self.animacoes = {
-                "down": quadros_base,
-                "up": quadros_base,
-                "right": quadros_base,
-                "left": quadros_base_esquerda,
+                "baixo": quadros_base,
+                "cima": quadros_base,
+                "direita": quadros_base,
+                "esquerda": quadros_base_esquerda,
             }
 
     def _recortar_alpha(self, surface):
@@ -232,7 +232,7 @@ class ObjetoJogador:
             quadros.append(canvas)
         return quadros
 
-    def _bounds_not_bg(self, surface, bg_color, tolerance=18):
+    def _limites_sem_fundo(self, surface, bg_color, tolerance=18):
         """Calcula bounding box ignorando pixels proximos da cor de fundo."""
         w, h = surface.get_size()
         min_x, min_y = w, h
@@ -289,9 +289,9 @@ class ObjetoJogador:
         cy = height // 2
         rx = max(1, width // 2)
         ry = max(1, height // 2)
-        return ellipse_points(cx, cy, rx, ry, segmentos)
+        return pontos_elipse(cx, cy, rx, ry, segmentos)
 
-    def _get_contact_shadow(self, width, height):
+    def _obter_sombra_contato(self, width, height):
         """Retorna sombra de contato em cache (otimizacao)."""
         chave = (width, height)
         sombra_em_cache = self.cache_sombra.get(chave)
@@ -305,7 +305,7 @@ class ObjetoJogador:
         self.cache_sombra[chave] = superficie
         return superficie
 
-    def _get_crown_surface(self, pixel_size):
+    def _obter_superficie_coroa(self, pixel_size):
         """Retorna coroa renderizada em cache (otimizacao)."""
         chave = max(1, int(pixel_size))
         coroa_em_cache = self.cache_coroa.get(chave)
@@ -349,15 +349,15 @@ class ObjetoJogador:
     def mover(self, dx, dy, dt, static_colliders):
         """Atualiza movimento, colisoes, direcao e animacao."""
         # Define velocidade baseada no input.
-        self.rigidbody.velocity.x = dx * self.velocidade
-        self.rigidbody.velocity.y = dy * self.velocidade
+        self.rigidbody.velocidade.x = dx * self.velocidade
+        self.rigidbody.velocidade.y = dy * self.velocidade
         self.movendo = (dx != 0 or dy != 0)
 
         # Resolve colisoes com retangulo de colisao axis-aligned.
-        atual = self.collider.get_rect_from_center(self.x, self.y)
-        move_x = self.rigidbody.velocity.x * dt
-        move_y = self.rigidbody.velocity.y * dt
-        resolvido = resolve_axis_aligned_motion(atual, move_x, move_y, static_colliders)
+        atual = self.collider.obter_rect_do_centro(self.x, self.y)
+        move_x = self.rigidbody.velocidade.x * dt
+        move_y = self.rigidbody.velocidade.y * dt
+        resolvido = resolver_movimento_alinhado(atual, move_x, move_y, static_colliders)
 
         # Atualiza posicao do centro.
         self.x = float(resolvido.centerx)
@@ -366,9 +366,9 @@ class ObjetoJogador:
         # Determina direcao baseado na velocidade (prioriza horizontal).
         if self.movendo:
             if abs(dx) >= abs(dy):
-                self.direcao = "right" if dx > 0 else "left"
+                self.direcao = "direita" if dx > 0 else "esquerda"
             else:
-                self.direcao = "down" if dy > 0 else "up"
+                self.direcao = "baixo" if dy > 0 else "cima"
 
         # Atualiza animacao: incrementa frame quando movendo, reseta quando parado.
         if self.movendo:
@@ -390,7 +390,7 @@ class ObjetoJogador:
             (self.x - t, self.y),        # esquerda
         ]
 
-    def draw(self, screen, camera, viewport, textura=None):
+    def desenhar(self, screen, camera, viewport, textura=None):
         """Renderiza o jogador com sprite animado, sombra e coroa.
         
         Culling: nao renderiza se fora do viewport.
@@ -404,7 +404,7 @@ class ObjetoJogador:
         # Se os frames existem, desenha sprite animado.
         if hasattr(self, "animacoes") and self.animacoes:
             sx, sy = transformar_pontos([(self.x, self.y)], camera, viewport)[0]
-            quadros_direcao = self.animacoes.get(self.direcao, self.animacoes.get("down", []))
+            quadros_direcao = self.animacoes.get(self.direcao, self.animacoes.get("baixo", []))
             if not quadros_direcao:
                 quadros_direcao = next(iter(self.animacoes.values()))
             quadro = quadros_direcao[self.indice_animacao % len(quadros_direcao)]
@@ -415,7 +415,7 @@ class ObjetoJogador:
             # Renderiza sombra de contato no solo.
             largura_sombra = max(10, int(quadro.get_width() * 0.36))
             altura_sombra = max(4, int(quadro.get_height() * 0.10))
-            sombra_contato = self._get_contact_shadow(largura_sombra, altura_sombra)
+            sombra_contato = self._obter_sombra_contato(largura_sombra, altura_sombra)
             retangulo_sombra = sombra_contato.get_rect(center=(sx, sy + self.tamanho + 1))
             screen.blit(sombra_contato, retangulo_sombra)
 
@@ -424,7 +424,7 @@ class ObjetoJogador:
 
             # Renderiza coroa pulsante acima da cabeca.
             tamanho_pixel_coroa = max(2, int(quadro.get_height() * 0.05))
-            coroa = self._get_crown_surface(tamanho_pixel_coroa)
+            coroa = self._obter_superficie_coroa(tamanho_pixel_coroa)
             oscilacao = int(pygame.time.get_ticks() / 220) % 2
             retangulo_coroa = coroa.get_rect(
                 midbottom=(sx, rect.top + max(3, coroa.get_height() // 2) + oscilacao)

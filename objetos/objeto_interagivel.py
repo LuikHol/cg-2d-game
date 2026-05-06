@@ -1,7 +1,7 @@
 import pygame
 
-from render.geometry_utils import polygon_centroid
-from render.geometry_utils import polygon_bounds
+from render.utils_geometrias import centroide_poligono
+from render.utils_geometrias import limites_poligono
 
 
 class ComponenteInteragivel:
@@ -16,7 +16,7 @@ class ComponenteInteragivel:
     @classmethod
     def do_poligono(cls, poligono, acao, tecla=pygame.K_e, margem=4):
         """Cria componente a partir do bounding box de um poligono."""
-        esquerda, topo, direita, base = polygon_bounds(poligono, margem=margem)
+        esquerda, topo, direita, base = limites_poligono(poligono, margem=margem)
         largura = int(direita - esquerda)
         altura = int(base - topo)
         return cls(pygame.Rect(esquerda, topo, largura, altura), acao, tecla)
@@ -38,24 +38,24 @@ class ComponenteInteragivel:
 
 
 class ObjetoInterativo:
-    def __init__(self, name, polygon, fill_color, border_color, action, texture_key=None, show_border=True):
-        self.name = name
-        self.polygon = polygon
-        self.fill_color = fill_color
-        self.border_color = border_color
-        self.texture_key = texture_key
-        self.show_border = show_border
-        self.component = ComponenteInteragivel.do_poligono(polygon, action)
+    def __init__(self, nome, poligono, cor_preenchimento, cor_borda, acao, chave_textura=None, mostrar_borda=True):
+        self.name = nome
+        self.polygon = poligono
+        self.fill_color = cor_preenchimento
+        self.border_color = cor_borda
+        self.texture_key = chave_textura
+        self.show_border = mostrar_borda
+        self.component = ComponenteInteragivel.do_poligono(poligono, acao)
 
-    def get_center(self):
-        x, y = polygon_centroid(self.polygon)
+    def obter_centro(self):
+        x, y = centroide_poligono(self.polygon)
         return int(x), int(y)
 
     def como_item_desenhavel(self):
         return {
-            "polygon": self.polygon,
-            "fill_color": self.fill_color,
-            "border_color": self.border_color,
-            "texture_key": self.texture_key,
-            "show_border": self.show_border,
+            "poligono": self.polygon,
+            "cor_preenchimento": self.fill_color,
+            "cor_borda": self.border_color,
+            "chave_textura": self.texture_key,
+            "mostrar_borda": self.show_border,
         }

@@ -1,8 +1,8 @@
 import pygame
 
-from objects.components import ComponenteColisaoEstatica
-from objects.objeto_interagivel import ObjetoInterativo
-from world.salas.utils import poligono_de_chao, foreground_img
+from objetos.componentes import ComponenteColisaoEstatica
+from objetos.objeto_interagivel import ObjetoInterativo
+from mundo.salas.utils import poligono_de_chao, foreground_img
 
 
 def criar_sala1():
@@ -25,11 +25,11 @@ def criar_sala1():
         None,
         None,
         {
-            "type": "message",
-            "text": "Sinto sua falta...",
-            "duration": 2.8,
+            "tipo": "mensagem",
+            "texto": "Sinto sua falta...",
+            "duracao": 2.8,
         },
-        show_border=False,
+        mostrar_borda=False,
     )
 
     coroa_pickup = [(255, 260), (390, 260), (325, 310), (255, 310)]
@@ -39,17 +39,17 @@ def criar_sala1():
         None,
         None,
         {
-            "type": "pickup",
+            "tipo": "coletar",
             "item": "coroa_vermelha",
             "mensagem": "Voce pegou a Coroa Vermelha!",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
 
     return {
         "nome": "sala_1",
-        "background_texture": "texturas/cenario/quarto_menino/quarto.png",
-        "background_zoom": 1.0,
+        "textura_fundo": "texturas/cenario/quarto_menino/quarto.png",
+        "zoom_fundo": 1.0,
         "poligonos": [
             poligono_de_chao(
                 [
@@ -64,17 +64,17 @@ def criar_sala1():
             inter_quadro.como_item_desenhavel(),
         ],
         "portas_visuais": [],
-        "interactables": [inter_coroa, inter_quadro],
-        "foreground": [
+        "interagiveis": [inter_coroa, inter_quadro],
+        "primeiro_plano": [
             # Poltrona: ajuste so o valor de escala para mudar o tamanho.
             # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
             foreground_img("texturas/objetos/abajour.png", 287, 680, 46, 130, escala=6),
             foreground_img("texturas/objetos/poltrona.png", 158, 450, 167, 197, escala=1.80),
         ],
-        "lights": [
+        "luzes": [
             {"x": 310, "y": 180, "rx": 54, "ry": 42, "steps": 24},
         ],
-        "colliders": [
+        "colidores": [
             # Parede superior (faixa de pedra no topo do PNG)
             colisao_estatica(1, 8, 995, 225),
             # Parede lateral esquerda
@@ -105,14 +105,14 @@ def criar_sala1():
         ],
         "transicoes": [
             {
-                "trigger": pygame.Rect(
+                "gatilho": pygame.Rect(
                     porta_sala1_x_min,
                     porta_sala1_y - 10,
                     porta_sala1_x_max - porta_sala1_x_min,
                     42,
                 ),
-                "target": "corredor",
-                "spawn": (498, 200),
+                "destino": "corredor",
+                "posicao_spawn": (498, 200),
             }
         ],
     }

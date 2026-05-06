@@ -1,10 +1,10 @@
-from configs.clipping_config import ABAIXO, ACIMA, DENTRO, DIREITA, ESQUERDA
+from configs.config_clipping import ABAIXO, ACIMA, DENTRO, DIREITA, ESQUERDA
 
 
 # Codigos de regiao usados para classificar onde um ponto esta em relacao a janela.
 # Cada constante representa um bit: pode-se combinar com | para indicar dois lados ao mesmo tempo.
 
-def compute_code(x, y, xmin, ymin, xmax, ymax):
+def computar_code(x, y, xmin, ymin, xmax, ymax):
     # Começa assumindo que o ponto esta dentro.
     code = DENTRO
 
@@ -25,8 +25,8 @@ def compute_code(x, y, xmin, ymin, xmax, ymax):
 
 def cohen_sutherland(x1, y1, x2, y2, xmin, ymin, xmax, ymax):
     # Calcula o codigo de regiao para cada ponta da linha.
-    code1 = compute_code(x1, y1, xmin, ymin, xmax, ymax)
-    code2 = compute_code(x2, y2, xmin, ymin, xmax, ymax)
+    code1 = computar_code(x1, y1, xmin, ymin, xmax, ymax)
+    code2 = computar_code(x2, y2, xmin, ymin, xmax, ymax)
 
     accept = False
 
@@ -73,10 +73,10 @@ def cohen_sutherland(x1, y1, x2, y2, xmin, ymin, xmax, ymax):
             # Substitui a ponta que estava fora pelo novo ponto cortado.
             if code_out == code1:
                 x1, y1 = x, y
-                code1 = compute_code(x1, y1, xmin, ymin, xmax, ymax)
+                code1 = computar_code(x1, y1, xmin, ymin, xmax, ymax)
             else:
                 x2, y2 = x, y
-                code2 = compute_code(x2, y2, xmin, ymin, xmax, ymax)
+                code2 = computar_code(x2, y2, xmin, ymin, xmax, ymax)
 
     if accept:
         return int(x1), int(y1), int(x2), int(y2)

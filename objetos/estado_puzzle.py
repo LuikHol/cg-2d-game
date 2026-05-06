@@ -1,7 +1,7 @@
 # Estado global do puzzle do tapete do quarto da rainha.
 # Ordem horaria: coroa (topo) → livro (direita) → pote (esquerda).
 
-# Ordem correta: slot 0=centro(livro), slot 1=direita(pote), slot 2=esquerda(coroa)
+# Ordem correta: slot 0=esquerda(coroa), slot 1=topo(livro), slot 2=direita(pote)
 _ORDEM = ["coroa_vermelha", "livro_laranja", "pote_mel"]
 _slots = [None, None, None]
 
@@ -38,9 +38,9 @@ def retirar_item(slot_index):
     return item
 
 
-def get_slots():
+def obter_slots():
     return list(_slots)
 
 
-def get_ordem():
+def obter_ordem():
     return list(_ORDEM)

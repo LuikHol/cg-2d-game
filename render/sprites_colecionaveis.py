@@ -22,7 +22,7 @@ def _desenhar_pattern(pattern, palette, pixel_size):
     return surf
 
 
-def get_collectible_sprite(item_name, pixel_size=1):
+def obter_sprite_colecionavel(item_name, pixel_size=1):
     """Retorna sprite pixel-art em cache para itens coletaveis."""
     item = str(item_name)
     tamanho_pixel = max(1, int(pixel_size))

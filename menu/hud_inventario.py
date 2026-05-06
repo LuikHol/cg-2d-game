@@ -33,7 +33,7 @@ class InventarioHUD:
             return
         self.indice_selecionado = (self.indice_selecionado + delta) % len(itens)
 
-    def get_item_selecionado(self, inventario):
+    def obter_item_selecionado(self, inventario):
         itens = inventario.listar() if inventario else []
         if not itens:
             return None

@@ -1,8 +1,8 @@
 import pygame
 
-from objects.components import ComponenteColisaoEstatica
-from objects.objeto_interagivel import ObjetoInterativo
-from world.salas.utils import foreground_img, poligono_de_chao
+from objetos.componentes import ComponenteColisaoEstatica
+from objetos.objeto_interagivel import ObjetoInterativo
+from mundo.salas.utils import foreground_img, poligono_de_chao
 
 
 def criar_corredor():
@@ -17,11 +17,11 @@ def criar_corredor():
         None,
         None,
         {
-            "type": "pickup",
+            "tipo": "coletar",
             "item": "pote_mel",
             "mensagem": "Voce pegou um Pote de Mel!",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
 
     # Layout do corredor:
@@ -55,16 +55,16 @@ def criar_corredor():
     COR_BORDA  = (55, 30, 60)
 
     def parede(pts):
-        return {"polygon": pts, "fill_color": COR_PAREDE, "border_color": COR_BORDA, "show_border": True}
+        return {"poligono": pts, "cor_preenchimento": COR_PAREDE, "cor_borda": COR_BORDA, "mostrar_borda": True}
 
     return {
         "nome": "corredor",
-        "background_texture": "texturas/cenario/chaocorredor1.png",
-        "background_bounds": (0, 0, 1600, 750),
-        "camera_bounds": (0, 0, 1600, 750),
-        "viewport_margin": 60,
-        "background_scale": 1.5,
-        "tile_world_width": 1600,
+        "textura_fundo": "texturas/cenario/chaocorredor1.png",
+        "limites_fundo": (0, 0, 1600, 750),
+        "limites_camera": (0, 0, 1600, 750),
+        "margem_viewport": 60,
+        "escala_fundo": 1.5,
+        "largura_tile_mundo": 1600,
         "poligonos": [
             parede(parede_teto_esq),
             parede(parede_teto_dir),
@@ -78,16 +78,16 @@ def criar_corredor():
             parede(parede_dir_baixo),
         ],
         "portas_visuais": [],
-        "interactables": [inter_pote],
-        "foreground": [
+        "interagiveis": [inter_pote],
+        "primeiro_plano": [
             # Poltrona: ajuste so o valor de escala para mudar o tamanho.
             # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
             foreground_img("texturas/objetos/urso.png", 1321, 76, 92, 201, escala=2.5, draw_above_player=False),
         ],
-        "lights": [
+        "luzes": [
             {"x": 1341, "y": 127, "rx": 55, "ry": 68, "steps": 24},
         ],
-        "colliders": [
+        "colidores": [
             # Urso Estatua
             colisao_estatica(1331, 41, 79, 208),
             colisao_estatica(0, 0, 460, 180),
@@ -105,24 +105,24 @@ def criar_corredor():
         ],
         "transicoes": [
             {
-                "trigger": pygame.Rect(460, 130, 80, 20),
-                "target": "sala_1",
-                "spawn": (500, 650),
+                "gatilho": pygame.Rect(460, 130, 80, 20),
+                "destino": "sala_1",
+                "posicao_spawn": (500, 650),
             },
             {
-                "trigger": pygame.Rect(0, 350, 12, 80),
-                "target": "quarto_rainha",
-                "spawn": (959, 430),
+                "gatilho": pygame.Rect(0, 350, 12, 80),
+                "destino": "quarto_rainha",
+                "posicao_spawn": (959, 430),
             },
             {
-                "trigger": pygame.Rect(1588, 350, 12, 80),
-                "target": "sala_2",
-                "spawn": (40, 375),
+                "gatilho": pygame.Rect(1588, 350, 12, 80),
+                "destino": "sala_2",
+                "posicao_spawn": (40, 375),
             },
             {
-                "trigger": pygame.Rect(130, 600, 80, 20),
-                "target": "biblioteca",
-                "spawn": (500, 260),
+                "gatilho": pygame.Rect(130, 600, 80, 20),
+                "destino": "biblioteca",
+                "posicao_spawn": (500, 260),
             },
         ],
     }

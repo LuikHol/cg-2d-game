@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pygame
 
-from objects.components import ColliderComponent, RigidbodyComponent, resolve_axis_aligned_motion
+from objetos.componentes import ComponenteColisao, ComponenteRigidbody, resolver_movimento_alinhado
 from render.preenchimento import scanline_fill
-from render.geometry_utils import ellipse_points
+from render.utils_geometrias import pontos_elipse
 from render.viewport import transformar_pontos
 
 
@@ -19,10 +19,10 @@ class ObjetoPerseguidora:
         self.tamanho = int(tamanho)
 
         self.velocidade = 220
-        self.rigidbody = RigidbodyComponent()
-        self.collider = ColliderComponent(tamanho * 1.55, tamanho * 1.55)
+        self.rigidbody = ComponenteRigidbody()
+        self.collider = ComponenteColisao(tamanho * 1.55, tamanho * 1.55)
 
-        self.direcao = "left"
+        self.direcao = "esquerda"
         self.movendo = False
         self.anim_fps = 8.0
         self.tempo_animacao = 0.0
@@ -60,7 +60,7 @@ class ObjetoPerseguidora:
 
         for cand_x, cand_y in candidatos:
             nx, ny = self._simular_passo(cand_x, cand_y, 0.22, static_colliders)
-            rect_novo = self.collider.get_rect_from_center(nx, ny)
+            rect_novo = self.collider.obter_rect_do_centro(nx, ny)
             desloc = math.hypot(nx - self.x, ny - self.y)
             if desloc > 8.0 and not self._colide_estatico(rect_novo, static_colliders):
                 self.x = nx
@@ -78,10 +78,10 @@ class ObjetoPerseguidora:
 
     def _simular_passo(self, dir_x, dir_y, dt, static_colliders):
         """Simula um passo para avaliar se a direcao ajuda a contornar obstaculos."""
-        atual = self.collider.get_rect_from_center(self.x, self.y)
+        atual = self.collider.obter_rect_do_centro(self.x, self.y)
         move_x = dir_x * self.velocidade * dt
         move_y = dir_y * self.velocidade * dt
-        resolvido = resolve_axis_aligned_motion(atual, move_x, move_y, static_colliders)
+        resolvido = resolver_movimento_alinhado(atual, move_x, move_y, static_colliders)
         return float(resolvido.centerx), float(resolvido.centery)
 
     def _escolher_direcao(self, alvo_x, alvo_y, dt, static_colliders):
@@ -188,10 +188,10 @@ class ObjetoPerseguidora:
 
         quadros_esquerda = [pygame.transform.flip(quadro, True, False) for quadro in padronizados]
         return {
-            "right": padronizados,
-            "left": quadros_esquerda,
-            "down": padronizados,
-            "up": padronizados,
+            "direita": padronizados,
+            "esquerda": quadros_esquerda,
+            "baixo": padronizados,
+            "cima": padronizados,
         }
 
     def _get_shadow_surface(self, width, height):
@@ -201,7 +201,7 @@ class ObjetoPerseguidora:
             return sombra
 
         superficie = pygame.Surface(chave, pygame.SRCALPHA)
-        pontos = ellipse_points(chave[0] // 2, chave[1] // 2, max(1, chave[0] // 2), max(1, chave[1] // 2), 24)
+        pontos = pontos_elipse(chave[0] // 2, chave[1] // 2, max(1, chave[0] // 2), max(1, chave[1] // 2), 24)
         scanline_fill(superficie, pontos, (0, 0, 0, 56))
         self.cache_sombra[chave] = superficie
         return superficie
@@ -218,21 +218,21 @@ class ObjetoPerseguidora:
         dir_x, dir_y, conseguiu_movimento = self._escolher_direcao(alvo_x, alvo_y, dt, static_colliders)
 
         if conseguiu_movimento:
-            self.rigidbody.velocity.x = dir_x * self.velocidade
-            self.rigidbody.velocity.y = dir_y * self.velocidade
+            self.rigidbody.velocidade.x = dir_x * self.velocidade
+            self.rigidbody.velocidade.y = dir_y * self.velocidade
             self.movendo = True
         else:
-            self.rigidbody.velocity.x = 0.0
-            self.rigidbody.velocity.y = 0.0
+            self.rigidbody.velocidade.x = 0.0
+            self.rigidbody.velocidade.y = 0.0
             self.movendo = False
 
-        atual = self.collider.get_rect_from_center(self.x, self.y)
-        move_x = self.rigidbody.velocity.x * dt
-        move_y = self.rigidbody.velocity.y * dt
-        resolvido = resolve_axis_aligned_motion(atual, move_x, move_y, static_colliders)
+        atual = self.collider.obter_rect_do_centro(self.x, self.y)
+        move_x = self.rigidbody.velocidade.x * dt
+        move_y = self.rigidbody.velocidade.y * dt
+        resolvido = resolver_movimento_alinhado(atual, move_x, move_y, static_colliders)
         novo_x = float(resolvido.centerx)
         novo_y = float(resolvido.centery)
-        rect_novo = self.collider.get_rect_from_center(novo_x, novo_y)
+        rect_novo = self.collider.obter_rect_do_centro(novo_x, novo_y)
 
         if self._colide_estatico(rect_novo, static_colliders):
             self.x, self.y = self.ultima_posicao_valida
@@ -263,10 +263,10 @@ class ObjetoPerseguidora:
                 self.tempo_desvio_forcado = max(self.tempo_desvio_forcado, 0.4)
 
         if self.movendo:
-            if abs(self.rigidbody.velocity.x) >= abs(self.rigidbody.velocity.y):
-                self.direcao = "right" if self.rigidbody.velocity.x > 0 else "left"
+            if abs(self.rigidbody.velocidade.x) >= abs(self.rigidbody.velocidade.y):
+                self.direcao = "direita" if self.rigidbody.velocidade.x > 0 else "esquerda"
             else:
-                self.direcao = "down" if self.rigidbody.velocity.y > 0 else "up"
+                self.direcao = "baixo" if self.rigidbody.velocidade.y > 0 else "cima"
 
             self.tempo_animacao += dt
             frame_time = 1.0 / self.anim_fps
@@ -276,7 +276,7 @@ class ObjetoPerseguidora:
         else:
             self.indice_animacao = 0
 
-    def draw(self, screen, camera, viewport):
+    def desenhar(self, screen, camera, viewport):
         if not (camera[0] <= self.x <= camera[2] and camera[1] <= self.y <= camera[3]):
             return
 
@@ -286,7 +286,7 @@ class ObjetoPerseguidora:
             return
 
         sx, sy = transformar_pontos([(self.x, self.y)], camera, viewport)[0]
-        quadros = self.animacoes.get(self.direcao, self.animacoes["left"])
+        quadros = self.animacoes.get(self.direcao, self.animacoes["esquerda"])
         quadro = quadros[self.indice_animacao % len(quadros)]
 
         largura_sombra = max(10, int(quadro.get_width() * 0.34))
