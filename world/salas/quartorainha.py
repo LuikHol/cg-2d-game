@@ -48,7 +48,7 @@ def criar_quarto_rainha():
         {
             "type": "place_item",
             "slot": 0,
-            "mensagem_ok": "Item depositado no tapete coroa!",
+            "mensagem_ok": "Item depositado no tapete!",
         },
         show_border=False,
     )
@@ -57,7 +57,7 @@ def criar_quarto_rainha():
         {
             "type": "place_item",
             "slot": 1,
-            "mensagem_ok": "Item depositado no tapete livro!",
+            "mensagem_ok": "Item depositado no tapete!",
         },
         show_border=False,
     )
@@ -66,7 +66,7 @@ def criar_quarto_rainha():
         {
             "type": "place_item",
             "slot": 2,
-            "mensagem_ok": "Item depositado no tapete pote!",
+            "mensagem_ok": "Item depositado no tapete!",
         },
         show_border=False,
     )
