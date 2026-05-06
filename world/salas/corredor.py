@@ -72,7 +72,7 @@ def criar_corredor():
 
     return {
         "nome": "corredor",
-        "background_texture": "texturas/cenario/chaointeiro.png",
+        "background_texture": "texturas/cenario/chaocorredor1.png",
         "background_bounds": (0, 0, 1600, 750),
         "camera_bounds": (0, 0, 1600, 750),
         "viewport_margin": 100,
