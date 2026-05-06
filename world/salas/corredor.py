@@ -75,7 +75,7 @@ def criar_corredor():
         "background_texture": "texturas/cenario/chaocorredor1.png",
         "background_bounds": (0, 0, 1600, 750),
         "camera_bounds": (0, 0, 1600, 750),
-        "viewport_margin": 100,
+        "viewport_margin": 60,
         "background_scale": 1.5,
         "tile_world_width": 1600,
         "poligonos": [
@@ -126,7 +126,7 @@ def criar_corredor():
             {
                 "trigger": pygame.Rect(0, 350, 12, 80),
                 "target": "quarto_rainha",
-                "spawn": (935, 430),
+                "spawn": (959, 430),
             },
             {
                 "trigger": pygame.Rect(1588, 350, 12, 80),

@@ -110,7 +110,7 @@ def criar_biblioteca():
                     30,
                 ),
                 "target": "corredor",
-                "spawn": (170, 470),
+                "spawn": (169, 580),
             }
         ],
     }

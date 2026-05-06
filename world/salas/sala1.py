@@ -143,7 +143,7 @@ def criar_sala1():
                     42,
                 ),
                 "target": "corredor",
-                "spawn": (500, 290),
+                "spawn": (498, 200),
             }
         ],
     }
