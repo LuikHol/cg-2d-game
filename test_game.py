@@ -252,9 +252,15 @@ class TestGameApp:
                 elif event.key in (pygame.K_d, pygame.K_RIGHT):
                     self.last_input_dir = "right"
                 elif event.key in (pygame.K_w, pygame.K_UP):
-                    self.last_input_dir = "up"
+                    if self.inventario_hud.aberto:
+                        self.inventario_hud.mover_selecao(-1, self.inventario)
+                    else:
+                        self.last_input_dir = "up"
                 elif event.key in (pygame.K_s, pygame.K_DOWN):
-                    self.last_input_dir = "down"
+                    if self.inventario_hud.aberto:
+                        self.inventario_hud.mover_selecao(1, self.inventario)
+                    else:
+                        self.last_input_dir = "down"
                 elif event.key == pygame.K_g:
                     self.debug_colisao = not self.debug_colisao
                     if not self.debug_colisao:
@@ -264,10 +270,6 @@ class TestGameApp:
                     self.ultimo_snippet = ""
                 elif event.key == pygame.K_r:
                     self.inventario_hud.alternar()
-                elif event.key == pygame.K_w and self.inventario_hud.aberto:
-                    self.inventario_hud.mover_selecao(-1, self.inventario)
-                elif event.key == pygame.K_s and self.inventario_hud.aberto:
-                    self.inventario_hud.mover_selecao(1, self.inventario)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.debug_colisao:
                 mouse_world = self.tela_para_mundo(event.pos)
@@ -294,7 +296,7 @@ class TestGameApp:
 
         dados_room = self.room_manager.get_room()
         
-        if self.gerenciador_interacao.papel_aberto:
+        if self.gerenciador_interacao.papel_aberto or self.inventario_hud.aberto:
             dx, dy = 0, 0
         self.player.mover(dx, dy, self.dt, dados_room["colliders"])
         transicao = self.room_manager.update(self.player, self.dt)
