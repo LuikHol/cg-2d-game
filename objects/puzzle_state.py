@@ -2,7 +2,7 @@
 # Ordem horaria: coroa (topo) → livro (direita) → pote (esquerda).
 
 # Ordem correta: slot 0=centro(livro), slot 1=direita(pote), slot 2=esquerda(coroa)
-_ORDEM = ["livro_laranja", "pote_mel", "coroa_vermelha"]
+_ORDEM = ["coroa_vermelha", "livro_laranja", "pote_mel"]
 _slots = [None, None, None]
 
 

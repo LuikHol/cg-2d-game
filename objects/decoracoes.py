@@ -98,9 +98,9 @@ def desenhar_pote_urso(surface, camera, viewport, inventario=None):
 
 # Posições mundo de cada círculo do tapete (centro).
 _CIRCULOS_TAPETE = [
-    (466, 331),  # slot 0 – coroa (topo)
-    (638, 491),  # slot 1 – livro (direita)
-    (289, 491),  # slot 2 – pote  (esquerda)
+    (289, 491),  # slot 0 – coroa (esquerda)
+    (466, 331),  # slot 1 – livro (topo)
+    (638, 491),  # slot 2 – pote  (direita)
 ]
 _ITENS_TAPETE = ["coroa_vermelha", "livro_laranja", "pote_mel"]
 

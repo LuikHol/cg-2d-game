@@ -8,31 +8,47 @@ def criar_quarto_rainha():
     # Porta para o corredor fica na lateral direita do quarto.
     porta_corredor = pygame.Rect(982, 376, 15, 117)
 
-    bilhete_biblioteca = [(737, 448), (767, 448), (767, 495), (737, 495)]
+    bilhete_puzzle = [(737, 448), (767, 448), (767, 495), (737, 495)]
+    diario_rainha = [(46, 549), (82, 549), (82, 585), (46, 585)]
 
     inter_bilhete = ObjetoInterativo(
-        "bilhete_biblioteca",
-        bilhete_biblioteca,
+        "bilhete_puzzle",
+        bilhete_puzzle,
         (185, 175, 120),
         (225, 210, 140),
         {
             "type": "message",
-            "text": "Do calor da realeza, ao dourado da docura, os tres guardioes carregam a chave da abertura",
-            "duration": 2.8,
+            "text": "Do calor da realeza, ao dourado da docura, os três guardiões carregam a chave da abertura",
+            "duration": 5,
         },
     )
 
-    # Três círculos do tapete – ordem horária: topo=coroa, direita=livro, esquerda=pote.
-    circulo_coroa = [(449, 314), (484, 314), (484, 349), (449, 349)]
-    circulo_livro  = [(621, 474), (656, 474), (656, 509), (621, 509)]
-    circulo_pote   = [(272, 474), (307, 474), (307, 509), (272, 509)]
+    inter_diario_rainha = ObjetoInterativo(
+        "diário_rainha",
+        diario_rainha,
+        (120, 80, 40),
+        (160, 110, 55),
+        {
+            "type": "paper",
+            "title": "",
+            "lines": [],
+            "texture_path": "texturas/documentos/diario_rainha.png",
+        },
+        texture_key="paper",
+        show_border=True,
+    )
+
+    # Três círculos do tapete – ordem horária: topo=livro, direita=pote, esquerda=coroa.
+    circulo_coroa = [(272, 474), (307, 474), (307, 509), (272, 509)]
+    circulo_livro  = [(449, 314), (484, 314), (484, 349), (449, 349)]
+    circulo_pote   = [(621, 474), (656, 474), (656, 509), (621, 509)]
 
     inter_coroa_tapete = ObjetoInterativo(
         "circulo do tapete", circulo_coroa, None, None,
         {
             "type": "place_item",
             "slot": 0,
-            "mensagem_ok": "Item depositado no tapete!",
+            "mensagem_ok": "Item depositado no tapete coroa!",
         },
         show_border=False,
     )
@@ -41,7 +57,7 @@ def criar_quarto_rainha():
         {
             "type": "place_item",
             "slot": 1,
-            "mensagem_ok": "Item depositado no tapete!",
+            "mensagem_ok": "Item depositado no tapete livro!",
         },
         show_border=False,
     )
@@ -50,7 +66,7 @@ def criar_quarto_rainha():
         {
             "type": "place_item",
             "slot": 2,
-            "mensagem_ok": "Item depositado no tapete!",
+            "mensagem_ok": "Item depositado no tapete pote!",
         },
         show_border=False,
     )
@@ -61,9 +77,10 @@ def criar_quarto_rainha():
         "background_zoom": 1.0,
         "viewport_margin": 50,
         "poligonos": [
+            inter_diario_rainha.como_item_desenhavel()
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete, inter_coroa_tapete, inter_livro_tapete, inter_pote_tapete],
+        "interactables": [inter_bilhete, inter_coroa_tapete, inter_livro_tapete, inter_pote_tapete, inter_diario_rainha],
         "foreground": [
         ],
         "lights": [

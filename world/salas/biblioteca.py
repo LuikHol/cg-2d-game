@@ -19,9 +19,8 @@ def criar_biblioteca():
     porta_x_max = 540
     porta_y_topo = sala_y_min
 
-    bilhete_biblioteca = [(250, 560), (330, 560), (330, 590), (250, 590)]
-    sprite_livro = get_collectible_sprite("livro_laranja", pixel_size=4)
     livro_pickup = [(318, 640), (358, 640), (358, 700), (318, 700)]
+    livro_coala = [(198, 348), (238, 348), (238, 388), (198, 388)]
 
     inter_livro_laranja = ObjetoInterativo(
         "livro_laranja",
@@ -36,16 +35,18 @@ def criar_biblioteca():
         show_border=False,
     )
 
-    inter_bilhete = ObjetoInterativo(
-        "bilhete_biblioteca",
-        bilhete_biblioteca,
-        (185, 175, 120),
-        (225, 210, 140),
+    inter_livro_coala = ObjetoInterativo(
+        "livro_coala",
+        livro_coala,
+        (120, 80, 40),
+        (160, 110, 55),
         {
-            "type": "message",
-            "text": "Silencio... esta biblioteca guarda segredos.",
-            "duration": 2.8,
+            "type": "paper",
+            "title": "",
+            "lines": [],
+            "texture_path": "texturas/documentos/livro_coala.png",
         },
+        show_border=False,
     )
 
     return {
@@ -64,10 +65,9 @@ def criar_biblioteca():
                 (110, 78, 52),
                 (92, 62, 42),
             ),
-            inter_bilhete.como_item_desenhavel(),
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete, inter_livro_laranja],
+        "interactables": [inter_livro_laranja, inter_livro_coala],
         "foreground": [
             foreground_img("texturas/objetos/estante_livros1.png", 575, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/estante_livros3.png", 755, 388, 189, 221, escala=1.19),

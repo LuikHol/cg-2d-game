@@ -8,21 +8,8 @@ from world.salas.utils import foreground_img, poligono_de_chao
 def criar_corredor():
     colisao_estatica = ComponenteColisaoEstatica
 
-    placa_corredor = [(470, 355), (530, 355), (530, 395), (470, 395)]
     # Area de interacao na base do urso para manter a estrela na posicao anterior.
     pote_corredor = [(1358, 246), (1382, 246), (1382, 268), (1358, 268)]
-
-    inter_placa = ObjetoInterativo(
-        "placa",
-        placa_corredor,
-        (90, 110, 120),
-        (110, 145, 160),
-        {
-            "type": "message",
-            "text": "aaaaaa sorroco",
-            "duration": 2.8,
-        },
-    )
 
     inter_pote = ObjetoInterativo(
         "pote",
@@ -89,10 +76,9 @@ def criar_corredor():
             parede(parede_esq_baixo),
             parede(parede_dir_cima),
             parede(parede_dir_baixo),
-            inter_placa.como_item_desenhavel(),
         ],
         "portas_visuais": [],
-        "interactables": [inter_placa, inter_pote],
+        "interactables": [inter_pote],
         "foreground": [
             # Poltrona: ajuste so o valor de escala para mudar o tamanho.
             # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
