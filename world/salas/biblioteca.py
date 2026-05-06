@@ -74,6 +74,7 @@ def criar_biblioteca():
             foreground_img("texturas/objetos/coala.png", 301, 520, 81, 169, escala=2.7),
         ],
         "lights": [
+            {"x": 344, "y": 598, "rx": 54, "ry": 42, "steps": 24},
         ],
         "colliders": [
             # Parede superior com vao da porta ao centro
