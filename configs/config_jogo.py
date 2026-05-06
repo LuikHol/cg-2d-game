@@ -1,6 +1,6 @@
 LARGURA_TELA = 800
 ALTURA_TELA = 600
-TITULO_JANELA = "RPG - teste"
+TITULO_JANELA = "Príncipe Dorminhoco"
 CAMINHO_TEXTURA = "textura.jpg"
 VOLUME_MUSICA = 0.5
 
