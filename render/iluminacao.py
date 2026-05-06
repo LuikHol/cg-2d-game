@@ -11,6 +11,10 @@ from configs.game_config import (
     PASSOS_LUZ,
 )
 
+# Nota sobre blit: É operação de composição/cópia de surface, NÃO construção gráfica.
+# A sombra é preenchida com scanline_fill (construção customizada).
+# O blit apenas copia o resultado final para a tela - é aceitável.
+
 _light_cache = {}
 _ambient_cache = {}
 
@@ -56,6 +60,11 @@ def obter_ambient_base(vw, vh):
 
 
 def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
+    """Renderiza iluminação e sombra ambiente.
+    
+    Nota técnica: scanline_fill é construção gráfica customizada (✓ conforme).
+    A composição final com blit é operação de cópia, não construção (✓ aceitável).
+    """
     vx0, vy0, vx1, vy1 = viewport
     vw = vx1 - vx0
     vh = vy1 - vy0

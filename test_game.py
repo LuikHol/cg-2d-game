@@ -20,6 +20,7 @@ from objects.player_object import ObjetoJogador
 from objects.interaction_manager import GerenciadorInteracao
 from objects.room_manager import RoomManager
 from objects.perseguidora_object import ObjetoPerseguidora
+from objects.vagalume import RebanhoVagalumes
 from world.rooms import construir_salas
 from objects.decoracoes import desenhar_coroa_estatua, desenhar_itens_tapete, desenhar_livro_coala, desenhar_pote_urso
 from render.sala_renderer import desenhar_sala, desenhar_foreground, desenhar_background_com_tiling, desenhar_item
@@ -81,6 +82,15 @@ class TestGameApp:
         # Sala 2 começa trancada até o puzzle do tapete ser resolvido.
         self.room_manager.lock_room("sala_2")
         self._sala2_desbloqueada = False
+        
+        # Vagalumes em cada sala
+        self.vagalumes_por_sala = {
+            "corredor": RebanhoVagalumes(quantidade=8, x_min=0, x_max=1600, y_min=200, y_max=600),
+            "sala_1": RebanhoVagalumes(quantidade=7, x_min=0, x_max=1280, y_min=180, y_max=500),
+            "sala_2": RebanhoVagalumes(quantidade=10, x_min=0, x_max=1000, y_min=150, y_max=600),
+            "biblioteca": RebanhoVagalumes(quantidade=6, x_min=0, x_max=1280, y_min=200, y_max=550),
+            "quarto_rainha": RebanhoVagalumes(quantidade=4, x_min=0, x_max=1280, y_min=250, y_max=450),
+        }
 
     def atualizar_viewport_por_sala(self, dados_room):
         if dados_room.get("viewport_fullscreen", False):
@@ -406,6 +416,14 @@ class TestGameApp:
             dados_room.get("interactables", []),
             self.dt,
         )
+        
+        # Atualiza vagalumes da sala atual
+        sala_atual = self.room_manager.current_room
+        if sala_atual in self.vagalumes_por_sala:
+            self.vagalumes_por_sala[sala_atual].update(self.dt)
+
+        # Atualiza partículas de pickup
+        self.gerenciador_interacao.particulas.update(self.dt)
 
     def renderizar(self):
         self.screen.fill((10, 10, 10))
@@ -445,6 +463,14 @@ class TestGameApp:
             draw_above_player=True,
         )
         desenhar_iluminacao(self.screen, self.player, dados_room, self.camera, self.viewport)
+        
+        # Vagalumes desenhados por cima da iluminação para aparecerem brilhantes
+        sala_atual = self.room_manager.current_room
+        if sala_atual in self.vagalumes_por_sala:
+            self.vagalumes_por_sala[sala_atual].draw(self.screen, self.camera, self.viewport)
+
+        # Partículas de pickup por cima de tudo
+        self.gerenciador_interacao.particulas.draw(self.screen, self.camera, self.viewport)
 
         if self.room_manager.current_room == "corredor":
             desenhar_pote_urso(self.screen, self.camera, self.viewport, self.inventario)
@@ -466,6 +492,7 @@ class TestGameApp:
         pygame.display.flip()
 
     def run(self):
+        # Loop principal do jogo
         while self.running:
             self.processar_eventos()
             self.atualizar_logica()

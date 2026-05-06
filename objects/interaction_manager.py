@@ -11,6 +11,7 @@ FONTE_UI_TAMANHO_MUNDO = 20
 FONTE_UI_TAMANHO_TITULO_PAPEL = 38
 FONTE_UI_TAMANHO_CORPO_PAPEL = 20
 from render.preenchimento import scanline_texture
+from objects.particulas import SistemaParticulas
 
 class GerenciadorInteracao:
     """Gerencia prompts, estrelas de interacao e leitura de papeis."""
@@ -38,6 +39,9 @@ class GerenciadorInteracao:
         self._interagiveis_visiveis = []
         self._papel_estava_pressionado = False
         self._papel_pode_fechar = False
+
+        # Partículas de feedback visual
+        self.particulas = SistemaParticulas()
 
     def atualizar(self, teclas, retangulo_ator, interagiveis, dt):
         """Atualiza estado de interacoes no frame atual."""
@@ -107,6 +111,9 @@ class GerenciadorInteracao:
             self.mensagem_mundo = acao.get("mensagem", f"Pegou {nome_item}!")
             self.pos_mensagem_mundo = obj.get_center()
             self.tempo_mensagem_mundo = 2.5
+            # Emite partículas na posição do item coletado
+            cx, cy = obj.get_center()
+            self.particulas.emitir_pickup(cx, cy)
             return
 
         if tipo_acao == "place_item":
