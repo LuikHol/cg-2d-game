@@ -8,9 +8,15 @@ def executar_jogo():
 
 
 def main():
-    acao = menu_principal()
-    if acao == "jogar":
-        executar_jogo()
+    while True:
+        acao = menu_principal()
+        if acao == "jogar":
+            try:
+                executar_jogo()
+            except SystemExit:
+                pass
+        else:
+            break
 
 
 if __name__ == "__main__":

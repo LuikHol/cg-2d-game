@@ -147,8 +147,8 @@ def criar_quarto_dia():
                     porta_x_max - porta_x_min,
                     42,
                 ),
-                "destino": "sala_2",
-                "posicao_spawn": (5540, 375),
+                "destino": "creditos",
+                "posicao_spawn": (500, 375),
             }
         ],
     }

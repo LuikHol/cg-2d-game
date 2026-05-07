@@ -30,6 +30,7 @@ from render.poligono import desenhar_poligono
 from objetos.inventario import Inventario
 from musica_loop import iniciar_musica_loop, trocar_musica_se_existir, parar_musica
 from menu.hud_inventario import InventarioHUD
+from menu.tela_creditos import tela_creditos
 
 class TestGameApp:
     def __init__(self):
@@ -82,6 +83,7 @@ class TestGameApp:
         # Sala 2 começa trancada até o puzzle do tapete ser resolvido.
         self.room_manager.trancar_sala("sala_2")
         self._sala2_desbloqueada = False
+        self.em_creditos = False
 
     def atualizar_viewport_por_sala(self, dados_room):
         if dados_room.get("tela_cheia", False):
@@ -332,7 +334,9 @@ class TestGameApp:
             transicao = None
 
         if transicao is not None:
-            if transicao["destino"] == "sala_2":
+            if transicao["destino"] == "creditos":
+                self.em_creditos = True
+            elif transicao["destino"] == "sala_2":
                 self.perseguidora = None
                 self.perseguidora_ativa = False
                 self.perseguidora_agendada = True
@@ -473,6 +477,16 @@ class TestGameApp:
 
     def run(self):
         while self.rodando:
+            if self.em_creditos:
+                resultado = tela_creditos(self.tela, self.relogio, tempo_total=12.0)
+                if resultado == "menu":
+                    self.rodando = False
+                elif resultado == "sair":
+                    parar_musica()
+                    pygame.quit()
+                    sys.exit()
+                break
+            
             self.processar_eventos()
             self.atualizar_logica()
             self.renderizar()
