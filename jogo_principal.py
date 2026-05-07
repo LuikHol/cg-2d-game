@@ -201,9 +201,9 @@ class TestGameApp:
             self.tela.blit(texto_inv, (largura_tela - texto_inv.get_width() - 10, 10))
 
         if self.perseguidora_ativa and self.room_manager.current_room == "sala_2":
-            texto_alerta = "FUJA! A perseguidora esta te seguindo."
+            texto_alerta = "FUJA! A perseguidora está te seguindo."
             if self.alerta_perseguicao_tempo > 0.0:
-                texto_alerta = "PERIGO! Ela apareceu atras de voce!"
+                texto_alerta = "PERIGO! Ela apareceu atrás de você!"
             alerta = self.fonte.render(texto_alerta, True, (255, 92, 92))
             self.tela.blit(alerta, (10, 34))
         elif self.perseguidora_agendada and self.room_manager.current_room == "sala_2":

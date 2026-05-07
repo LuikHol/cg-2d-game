@@ -8,7 +8,6 @@ from mundo.salas.utils import foreground_img, poligono_de_chao
 def criar_corredor():
     colisao_estatica = ComponenteColisaoEstatica
 
-    # Area de interacao na base do urso para manter a estrela na posicao anterior.
     pote_corredor = [(1358, 246), (1382, 246), (1382, 268), (1358, 268)]
 
     inter_pote = ObjetoInterativo(
@@ -59,7 +58,7 @@ def criar_corredor():
 
     return {
         "nome": "corredor",
-        "textura_fundo": "texturas/cenario/chaocorredor1.png",
+        "textura_fundo": "texturas/cenario/corredor/chaocorredor1.png",
         "limites_fundo": (0, 0, 1600, 750),
         "limites_camera": (0, 0, 1600, 750),
         "margem_viewport": 60,
@@ -80,8 +79,6 @@ def criar_corredor():
         "portas_visuais": [],
         "interagiveis": [inter_pote],
         "primeiro_plano": [
-            # Poltrona: ajuste so o valor de escala para mudar o tamanho.
-            # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
             foreground_img("texturas/objetos/urso.png", 1321, 76, 92, 201, escala=2.5, draw_above_player=False),
         ],
         "luzes": [

@@ -8,32 +8,14 @@ def criar_sala2():
     colisao_estatica = ComponenteColisaoEstatica
     largura_sala = 5600
 
-    pergaminho_sala2 = [(5300, 350), (5390, 350), (5390, 380), (5300, 380)]
-
-    inter_pergaminho = ObjetoInterativo(
-        "pergaminho",
-        pergaminho_sala2,
-        (170, 155, 110),
-        None,
-        {
-            "tipo": "documento",
-            "titulo": "Folha de Papel",
-            "linhas": [
-                "Corredor 2",
-                "Nao olhe para tras",
-                "Use E para fechar",
-            ],
-        },
-        chave_textura="paper",
-        mostrar_borda=False,
-    )
-
     parede_teto = [(0, 0), (largura_sala, 0), (largura_sala, 180), (0, 180)]
     parede_chao = [(0, 600), (largura_sala, 600), (largura_sala, 750), (0, 750)]
 
     parede_esq_cima = [(0, 180), (12, 180), (12, 320), (0, 320)]
     parede_esq_baixo = [(0, 440), (12, 440), (12, 600), (0, 600)]
-    parede_dir = [(largura_sala - 12, 180), (largura_sala, 180), (largura_sala, 600), (largura_sala - 12, 600)]
+
+    parede_dir_cima  = [(largura_sala - 12, 180), (largura_sala, 180), (largura_sala, 320), (largura_sala - 12, 320)]
+    parede_dir_baixo = [(largura_sala - 12, 440), (largura_sala, 440), (largura_sala, 600), (largura_sala - 12, 600)]
 
     COR_PAREDE = (30, 30, 35)
     COR_BORDA = (55, 30, 60)
@@ -84,7 +66,7 @@ def criar_sala2():
 
     return {
         "nome": "sala_2",
-        "textura_fundo": "texturas/cenario/chaocorredor2.png",
+        "textura_fundo": "texturas/cenario/corredor/chaocorredor2.png",
         "limites_fundo": (0, 0, largura_sala, 750),
         "limites_camera": (0, 0, largura_sala, 750),
         "largura_camera": 1000,
@@ -97,20 +79,22 @@ def criar_sala2():
             parede(parede_chao),
             parede(parede_esq_cima),
             parede(parede_esq_baixo),
-            parede(parede_dir),
+            parede(parede_dir_cima),
+            parede(parede_dir_baixo),
             *[obstaculo(pts) for pts in obstaculos_poligonos],
-            inter_pergaminho.como_item_desenhavel(),
         ],
-        "portas_visuais": [
-            ([(0, 320), (16, 320), (16, 440), (0, 440)], (170, 125, 70), (220, 180, 110)),
+        "portas_visuais": [],
+        "interagiveis": [],
+        "luzes": [
+            {"x": largura_sala - 60, "y": 380, "rx": 200, "ry": 160, "steps": 36},
         ],
-        "interagiveis": [inter_pergaminho],
         "colidores": [
             colisao_estatica(0, 0, largura_sala, 180),
             colisao_estatica(0, 600, largura_sala, 150),
             colisao_estatica(0, 180, 12, 140),
             colisao_estatica(0, 440, 12, 160),
-            colisao_estatica(largura_sala - 12, 180, 12, 420),
+            colisao_estatica(largura_sala - 12, 180, 12, 140),
+            colisao_estatica(largura_sala - 12, 440, 12, 160),
             *[colisao_estatica(x, y, w, h) for x, y, w, h in obstaculos_retangulares],
         ],
         "transicoes": [
