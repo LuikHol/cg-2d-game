@@ -84,7 +84,7 @@ def criar_corredor():
         "luzes": [
             {"x": 1341, "y": 127, "rx": 55, "ry": 68, "steps": 24},
         ],
-        "colidores": [
+        "colisores": [
             # Urso Estatua
             colisao_estatica(1331, 41, 79, 208),
             colisao_estatica(0, 0, 460, 180),

@@ -72,7 +72,7 @@ def criar_sala1():
         "luzes": [
             {"x": 310, "y": 180, "rx": 54, "ry": 42, "steps": 24},
         ],
-        "colidores": [
+        "colisores": [
             # Parede superior (faixa de pedra no topo do PNG)
             colisao_estatica(1, 8, 995, 225),
             # Parede lateral esquerda

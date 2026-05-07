@@ -75,7 +75,7 @@ def criar_biblioteca():
         "luzes": [
             {"x": 344, "y": 598, "rx": 54, "ry": 42, "steps": 24},
         ],
-        "colidores": [
+        "colisores": [
             # Parede superior com vao da porta ao centro
             colisao_estatica(1, 8, 443, 225),
             colisao_estatica(561, 8, 443, 225),

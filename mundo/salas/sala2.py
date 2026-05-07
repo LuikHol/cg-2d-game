@@ -1,8 +1,6 @@
 import pygame
 
 from objetos.componentes import ComponenteColisaoEstatica
-from objetos.objeto_interagivel import ObjetoInterativo
-
 
 def criar_sala2():
     colisao_estatica = ComponenteColisaoEstatica
@@ -71,6 +69,7 @@ def criar_sala2():
         "largura_camera": 1000,
         "altura_camera": 750,
         "margem_viewport": 100,
+        "alfa_escuridao": 220,
         "escala_fundo": 1.5,
         "largura_tile_mundo": 1600,
         "poligonos": [
@@ -87,7 +86,7 @@ def criar_sala2():
         "luzes": [
             {"x": largura_sala - 60, "y": 380, "rx": 200, "ry": 160, "steps": 36},
         ],
-        "colidores": [
+        "colisores": [
             colisao_estatica(0, 0, largura_sala, 180),
             colisao_estatica(0, 600, largura_sala, 150),
             colisao_estatica(0, 180, 12, 140),
@@ -101,6 +100,11 @@ def criar_sala2():
                 "gatilho": pygame.Rect(0, 350, 12, 80),
                 "destino": "corredor",
                 "posicao_spawn": (1540, 390),
-            }
+            },
+            {
+                "gatilho": pygame.Rect(largura_sala - 12, 350, 12, 80),
+                "destino": "quarto_dia",
+                "posicao_spawn": (740, 284),
+            },
         ],
     }

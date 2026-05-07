@@ -170,7 +170,7 @@ class TestGameApp:
                 int(round(tamanho_colisor)),
                 int(round(tamanho_colisor)),
             )
-            if not any(candidato.colliderect(col.get_rect()) for col in dados_room.get("colidores", [])):
+            if not any(candidato.colliderect(col.get_rect()) for col in dados_room.get("colisores", [])):
                 spawn_x = candidato_x
                 spawn_y = candidato_y
                 break
@@ -297,7 +297,7 @@ class TestGameApp:
         
         if self.gerenciador_interacao.papel_aberto or self.inventario_hud.aberto:
             dx, dy = 0, 0
-        self.player.mover(dx, dy, self.dt, dados_room["colidores"])
+        self.player.mover(dx, dy, self.dt, dados_room["colisores"])
         transicao = self.room_manager.atualizar(self.player, self.dt)
 
         # Verifica se puzzle foi resolvido e desbloqueia sala 2.
@@ -313,8 +313,8 @@ class TestGameApp:
                 # Remove o collider de porta do corredor.
                 corredor = self.room_manager.rooms.get("corredor")
                 if corredor:
-                    corredor["colidores"] = [
-                        c for c in corredor["colidores"]
+                    corredor["colisores"] = [
+                        c for c in corredor["colisores"]
                         if not (c.rect.x == 1588 and c.rect.y == 350 and c.rect.width == 12 and c.rect.height == 80)
                     ]
 
@@ -394,7 +394,7 @@ class TestGameApp:
                 self._spawn_perseguidora_atras_do_player(dados_room)
 
         if self.perseguidora_ativa and self.perseguidora is not None and self.room_manager.current_room == "sala_2":
-            self.perseguidora.atualizar(self.player.x, self.player.y, self.dt, dados_room["colidores"])
+            self.perseguidora.atualizar(self.player.x, self.player.y, self.dt, dados_room["colisores"])
 
             player_rect = self.player.collider.obter_rect_do_centro(self.player.x, self.player.y)
             perseguidora_rect = self.perseguidora.collider.obter_rect_do_centro(self.perseguidora.x, self.perseguidora.y)

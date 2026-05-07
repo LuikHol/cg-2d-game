@@ -88,7 +88,7 @@ def criar_quarto_rainha():
             {"x": 467, "y": 332, "rx": 56, "ry": 50, "steps": 24},
             {"x": 639, "y": 492, "rx": 54, "ry": 51, "steps": 24},
         ],
-        "colidores": [
+        "colisores": [
             # 
             colisao_estatica(1, 0, 17, 747),
             colisao_estatica(4, 735, 988, 13),
