@@ -84,6 +84,7 @@ class TestGameApp:
         self.room_manager.trancar_sala("sala_2")
         self._sala2_desbloqueada = False
         self.em_creditos = False
+        self.em_game_over = False
 
     def atualizar_viewport_por_sala(self, dados_room):
         if dados_room.get("tela_cheia", False):
@@ -186,6 +187,63 @@ class TestGameApp:
         self.perseguidora_ativa = True
         self.perseguidora_agendada = False
         self.alerta_perseguicao_tempo = 3.0
+
+    def _ativar_game_over(self):
+        self.em_game_over = True
+        self.perseguidora = None
+        self.perseguidora_ativa = False
+        self.perseguidora_agendada = False
+        self.tempo_andando_sala2 = 0.0
+        self.alerta_perseguicao_tempo = 0.0
+
+    def _reiniciar_antes_da_perseguicao(self):
+        self.room_manager.current_room = "corredor"
+        self.player.x = 1500.0
+        self.player.y = 390.0
+        self.perseguidora = None
+        self.perseguidora_ativa = False
+        self.perseguidora_agendada = False
+        self.tempo_andando_sala2 = 0.0
+        self.alerta_perseguicao_tempo = 0.0
+        self.ultima_posicao_player_sala2 = (float(self.player.x), float(self.player.y))
+        self.gerenciador_interacao.papel_aberto = None
+        self.inventario_hud.aberto = False
+        self.em_game_over = False
+
+        dados_room = self.room_manager.obter_sala()
+        self.atualizar_viewport_por_sala(dados_room)
+        self.camera = (0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
+
+        faixa = MUSICA_POR_SALA.get("corredor")
+        if faixa:
+            trocar_musica_se_existir(
+                file_name=faixa,
+                fallback_to_first=True,
+                volume=VOLUME_MUSICA,
+                fade_ms=350,
+            )
+        self.last_room_for_music = "corredor"
+
+    def _mostrar_tela_game_over(self):
+        fonte_titulo = pygame.font.SysFont(None, 86)
+        fonte_sub = pygame.font.SysFont(None, 34)
+
+        while self.rodando and self.em_game_over:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.rodando = False
+                    return
+                if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                    self._reiniciar_antes_da_perseguicao()
+                    return
+
+            self.tela.fill((8, 0, 0))
+            titulo = fonte_titulo.render("GAME OVER", True, (240, 70, 70))
+            subtitulo = fonte_sub.render("Pressione qualquer botao para continuar", True, (235, 235, 235))
+            self.tela.blit(titulo, (LARGURA_TELA // 2 - titulo.get_width() // 2, ALTURA_TELA // 2 - 80))
+            self.tela.blit(subtitulo, (LARGURA_TELA // 2 - subtitulo.get_width() // 2, ALTURA_TELA // 2 + 12))
+            pygame.display.flip()
+            self.relogio.tick(60)
 
     def desenhar_hud(self):
         texto = self.fonte.render(
@@ -403,8 +461,8 @@ class TestGameApp:
             player_rect = self.player.collider.obter_rect_do_centro(self.player.x, self.player.y)
             perseguidora_rect = self.perseguidora.collider.obter_rect_do_centro(self.perseguidora.x, self.perseguidora.y)
             if player_rect.colliderect(perseguidora_rect):
-                # Reposiciona a perseguidora para manter a pressao sem travar o player.
-                self._spawn_perseguidora_atras_do_player(dados_room)
+                self._ativar_game_over()
+                return
 
         if self.alerta_perseguicao_tempo > 0.0:
             self.alerta_perseguicao_tempo = max(0.0, self.alerta_perseguicao_tempo - self.dt)
@@ -477,6 +535,10 @@ class TestGameApp:
 
     def run(self):
         while self.rodando:
+            if self.em_game_over:
+                self._mostrar_tela_game_over()
+                continue
+
             if self.em_creditos:
                 resultado = tela_creditos(self.tela, self.relogio, tempo_total=12.0)
                 if resultado == "menu":
