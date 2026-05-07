@@ -2,7 +2,6 @@ import math
 
 
 def centroide_poligono(pontos):
-    """Retorna o centroide de um poligono como tupla float (cx, cy)."""
     if not pontos:
         return 0.0, 0.0
     n = len(pontos)
@@ -12,7 +11,7 @@ def centroide_poligono(pontos):
 
 
 def limites_poligono(pontos, margem=0):
-    """Retorna bounds (xmin, ymin, xmax, ymax) com margem opcional."""
+    # Retorna bounds (xmin, ymin, xmax, ymax) com margem opcional.
     if not pontos:
         return 0, 0, 0, 0
     xs = [p[0] for p in pontos]
@@ -25,7 +24,7 @@ def limites_poligono(pontos, margem=0):
 
 
 def pontos_elipse(cx, cy, rx, ry, segmentos=56):
-    """Gera vertices inteiros aproximando uma elipse."""
+    # Gera vertices inteiros aproximando uma elipse.
     pontos = []
     for i in range(segmentos):
         ang = (2.0 * math.pi * i) / segmentos

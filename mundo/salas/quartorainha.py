@@ -89,7 +89,7 @@ def criar_quarto_rainha():
             {"x": 639, "y": 492, "rx": 54, "ry": 51, "steps": 24},
         ],
         "colidores": [
-            # Parede superior com vao da porta ao centro
+            # 
             colisao_estatica(1, 0, 17, 747),
             colisao_estatica(4, 735, 988, 13),
             colisao_estatica(992, 487, 8, 261),
@@ -103,7 +103,6 @@ def criar_quarto_rainha():
             colisao_estatica(20, 381, 187, 163),
             colisao_estatica(900, 495, 94, 193),
             colisao_estatica(881, 531, 53, 115),
-
         ],
         "transicoes": [
             {

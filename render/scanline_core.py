@@ -1,5 +1,5 @@
 def iter_scanline_spans(pontos):
-    """Itera spans horizontais (y, x_ini, x_fim) para um poligono."""
+    # Itera spans horizontais (y, x_ini, x_fim) para um poligono.
     ys = [p[1] for p in pontos]
     y_min = int(min(ys))
     y_max = int(max(ys))

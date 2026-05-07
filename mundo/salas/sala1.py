@@ -66,8 +66,6 @@ def criar_sala1():
         "portas_visuais": [],
         "interagiveis": [inter_coroa, inter_quadro],
         "primeiro_plano": [
-            # Poltrona: ajuste so o valor de escala para mudar o tamanho.
-            # Base: x=158, y=400, w=164, h=197 (escala=1.0)  ← mude y_base para subir/descer
             foreground_img("texturas/objetos/abajour.png", 287, 680, 46, 130, escala=6),
             foreground_img("texturas/objetos/poltrona.png", 158, 450, 167, 197, escala=1.80),
         ],

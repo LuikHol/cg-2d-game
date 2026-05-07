@@ -103,10 +103,8 @@ def desenhar_background_da_sala(surface, room_data, camera, viewport):
 
 
 def desenhar_background_com_tiling(surface, room_data, camera, viewport):
-    """
-    Renderiza background com tiling: extrai um pedaço da textura e repete horizontalmente.
-    Usa clipping para garantir que só a viewport visível seja renderizada.
-    """
+    # Renderiza background com tiling: extrai um pedaço da textura e repete horizontalmente.
+    # Usa clipping para garantir que só a viewport visível seja renderizada.
     background_path = room_data.get("textura_fundo")
     if not background_path:
         return False
@@ -130,7 +128,6 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     tile_mundo_w = room_data.get("largura_tile_mundo", bw / 8)
     tile_mundo_w = max(1, tile_mundo_w)
     
-    # Extrai tile uma única vez
     tile_cache_key = (background_path, tile_mundo_w)
     if tile_cache_key not in _tile_cache:
         # Calcula quantos pixels do PNG correspondem ao tile_mundo_w
@@ -162,7 +159,6 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     tile_index = int(pos_em_tiles)
     offset_na_tile = (pos_em_tiles - tile_index) * tile_w
     
-    # Salva clip anterior e define novo clip para viewport
     old_clip = surface.get_clip()
     surface.set_clip(pygame.Rect(viewport[0], viewport[1], out_w, out_h))
     
@@ -173,7 +169,6 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
             surface.blit(tile_surf, (x_screen, viewport[1]))
             x_screen += tile_w
     finally:
-        # Restaura clip anterior
         surface.set_clip(old_clip)
     
     return True
@@ -236,7 +231,7 @@ def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_cl
 
 
 def desenhar_sala(surface, room_data, camera, viewport, textures, debug_clip=False):
-    """Desenha background + polígonos + portas visuais da sala."""
+    # Desenha background + polígonos + portas visuais da sala.
     tem_background = desenhar_background_da_sala(surface, room_data, camera, viewport)
     for item in room_data["poligonos"]:
         if tem_background and item_eh_chao_base(item):

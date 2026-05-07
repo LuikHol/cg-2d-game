@@ -1,4 +1,3 @@
-"""Objeto do jogador com animacao, fisicas e renderizacao."""
 import pygame
 from pathlib import Path
 from render.poligono import desenhar_poligono
@@ -12,7 +11,7 @@ from objetos.componentes import ComponenteRigidbody, ComponenteColisao, resolver
 
 
 class ObjetoJogador:
-    """Representa o jogador no mundo com sprite animado, colisoes e fisicas."""
+    # Representa o jogador no mundo com sprite animado, colisoes e fisicas.
 
     def __init__(self, x, y, tamanho=20):
         # Posicao no mundo (ponto central do corpo).
@@ -20,12 +19,10 @@ class ObjetoJogador:
         self.y = float(y)
         self.tamanho = tamanho
 
-        # Fisicas basicas.
         self.velocidade = 250  # unidades de mundo por segundo
         self.rigidbody = ComponenteRigidbody()
         self.collider = ComponenteColisao(tamanho * 1.4, tamanho * 1.4)
 
-        # Estado de movimento e animacao.
         self.direcao = "direita"   # direita | esquerda | cima | baixo
         self.movendo = False
         self.anim_fps = 9.0
@@ -37,7 +34,6 @@ class ObjetoJogador:
         self.cache_sombra = {}
         self.cache_coroa = {}
 
-        # Calcula altura alvo do sprite baseado no tamanho do jogador.
         altura_alvo = max(16, int(self.tamanho * 2.5 * self.escala_sprite))
 
         # Novo formato: 3 arquivos separados por direcao (4 frames cada).
@@ -168,17 +164,15 @@ class ObjetoJogador:
             }
 
     def _recortar_alpha(self, surface):
-        """Recorta a superficie removendo bordas transparentes."""
+        # Recorta a superficie removendo bordas transparentes.
         bounds = surface.get_bounding_rect(min_alpha=1)
         if bounds.width <= 0 or bounds.height <= 0:
             return surface
         return surface.subsurface(bounds).copy()
 
     def _carregar_quadros_da_faixa(self, caminho_imagem, altura_alvo):
-        """Carrega e processa frames de animacao a partir de uma faixa de sprite.
-        
-        Extrai 4 frames, aplica escala proporcional e centra/ancora no pe.
-        """
+        # Carrega e processa frames de animacao a partir de uma faixa de sprite.
+        # Extrai 4 frames, aplica escala proporcional e centra/ancora no pe.
         faixa = pygame.image.load(str(caminho_imagem)).convert_alpha()
         quantidade_quadros = 4
         largura_quadro = faixa.get_width() // quantidade_quadros
@@ -232,7 +226,7 @@ class ObjetoJogador:
         return quadros
 
     def _limites_sem_fundo(self, surface, bg_color, tolerance=18):
-        """Calcula bounding box ignorando pixels proximos da cor de fundo."""
+        # Calcula bounding box ignorando pixels proximos da cor de fundo.
         w, h = surface.get_size()
         min_x, min_y = w, h
         max_x, max_y = -1, -1
@@ -259,14 +253,14 @@ class ObjetoJogador:
         return pygame.Rect(min_x, min_y, (max_x - min_x) + 1, (max_y - min_y) + 1)
 
     def _normalizar_animacoes(self, quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda):
-        """Normaliza todos os frames para mesmo tamanho, centralizando e ancorand no pe."""
+        # Normaliza todos os frames para mesmo tamanho, centralizando e ancorand no pe.
         grupos = [quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda]
         todos = [quadro for grupo in grupos for quadro in grupo]
         largura_maxima = max(quadro.get_width() for quadro in todos)
         altura_maxima = max(quadro.get_height() for quadro in todos)
 
         def padronizar(grupo):
-            """Coloca cada frame em um canvas padrao, centralizado e ancorado."""
+            # Coloca cada frame em um canvas padrao, centralizado e ancorado.
             saida = []
             for quadro in grupo:
                 w, h = quadro.get_size()
@@ -280,7 +274,7 @@ class ObjetoJogador:
 
 
     def _gerar_pontos_elipse(self, width, height, segmentos=28):
-        """Gera poligono aproximando uma elipse para usar com scanline_fill."""
+        # Gera poligono aproximando uma elipse para usar com scanline_fill.
         cx = width // 2
         cy = height // 2
         rx = max(1, width // 2)
@@ -288,7 +282,7 @@ class ObjetoJogador:
         return pontos_elipse(cx, cy, rx, ry, segmentos)
 
     def _obter_sombra_contato(self, width, height):
-        """Retorna sombra de contato em cache (otimizacao)."""
+        # Retorna sombra de contato em cache (otimizacao).
         chave = (width, height)
         sombra_em_cache = self.cache_sombra.get(chave)
         if sombra_em_cache is not None:
@@ -302,7 +296,7 @@ class ObjetoJogador:
         return superficie
 
     def _obter_superficie_coroa(self, pixel_size):
-        """Retorna coroa renderizada em cache (otimizacao)."""
+        # Retorna coroa renderizada em cache (otimizacao).
         chave = max(1, int(pixel_size))
         coroa_em_cache = self.cache_coroa.get(chave)
         if coroa_em_cache is not None:
@@ -343,8 +337,7 @@ class ObjetoJogador:
         return superficie
 
     def mover(self, dx, dy, dt, static_colliders):
-        """Atualiza movimento, colisoes, direcao e animacao."""
-        # Define velocidade baseada no input.
+        # Atualiza movimento, colisoes, direcao e animacao.
         self.rigidbody.velocidade.x = dx * self.velocidade
         self.rigidbody.velocidade.y = dy * self.velocidade
         self.movendo = (dx != 0 or dy != 0)
@@ -355,7 +348,6 @@ class ObjetoJogador:
         move_y = self.rigidbody.velocidade.y * dt
         resolvido = resolver_movimento_alinhado(atual, move_x, move_y, static_colliders)
 
-        # Atualiza posicao do centro.
         self.x = float(resolvido.centerx)
         self.y = float(resolvido.centery)
 
@@ -366,7 +358,6 @@ class ObjetoJogador:
             else:
                 self.direcao = "baixo" if dy > 0 else "cima"
 
-        # Atualiza animacao: incrementa frame quando movendo, reseta quando parado.
         if self.movendo:
             self.tempo_animacao += dt
             frame_time = 1.0 / self.anim_fps
@@ -377,7 +368,7 @@ class ObjetoJogador:
             self.indice_animacao = 0
 
     def get_pontos(self):
-        """Retorna os pontos do corpo do jogador como losango (fallback para renderizacao poligonal)."""
+        # Retorna os pontos do corpo do jogador como losango (fallback para renderizacao poligonal).
         t = self.tamanho
         return [
             (self.x,     self.y - t),   # topo
@@ -387,17 +378,15 @@ class ObjetoJogador:
         ]
 
     def desenhar(self, screen, camera, viewport, textura=None):
-        """Renderiza o jogador com sprite animado, sombra e coroa.
+        # Renderiza o jogador com sprite animado, sombra e coroa.
         
-        Culling: nao renderiza se fora do viewport.
-        Se animacoes existem: usa sprite com sombra e coroa pulsante.
-        Senao: fallback para poligono losango.
-        """
+        # Culling: não renderiza se fora do viewport.
+        # Se animacoes existem: usa sprite com sombra e coroa pulsante.
+        # Senao: fallback para poligono losango.
         # Culling simples no mundo antes de converter para a tela.
         if not (camera[0] <= self.x <= camera[2] and camera[1] <= self.y <= camera[3]):
             return
 
-        # Se os frames existem, desenha sprite animado.
         if hasattr(self, "animacoes") and self.animacoes:
             sx, sy = transformar_pontos([(self.x, self.y)], camera, viewport)[0]
             quadros_direcao = self.animacoes.get(self.direcao, self.animacoes.get("baixo", []))

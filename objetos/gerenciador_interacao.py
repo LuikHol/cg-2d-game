@@ -13,7 +13,7 @@ FONTE_UI_TAMANHO_TITULO_PAPEL = 38
 FONTE_UI_TAMANHO_CORPO_PAPEL = 20
 
 class GerenciadorInteracao:
-    """Gerencia prompts, estrelas de interacao e leitura de papeis."""
+    # Gerencia prompts, estrelas de interacao e leitura de papeis.
 
     def __init__(self, textura_papel=None, inventario=None):
         # Fontes de UI
@@ -41,7 +41,7 @@ class GerenciadorInteracao:
         self._papel_pode_fechar = False
 
     def atualizar(self, teclas, retangulo_ator, interagiveis, dt):
-        """Atualiza estado de interacoes no frame atual."""
+        # Atualiza estado de interacoes no frame atual.
         papel_pressionado = bool(teclas[pygame.K_e])
 
         # Se um papel estiver aberto, so processa o fechamento para evitar
@@ -80,10 +80,9 @@ class GerenciadorInteracao:
         self._papel_estava_pressionado = papel_pressionado
 
     def _atualizar_papel_aberto(self, papel_pressionado):
-        """Atualiza estado de fechamento do papel.
+        # Atualiza estado de fechamento do papel.
 
-        Retorna True quando o fluxo principal de interacao deve ser interrompido.
-        """
+        # Retorna True quando o fluxo principal de interacao deve ser interrompido.
         if not self.papel_aberto:
             return False
 
@@ -98,7 +97,7 @@ class GerenciadorInteracao:
         return True
 
     def _aplicar_acao(self, acao, obj):
-        """Executa a acao configurada para o interagivel."""
+        # Executa a acao configurada para o interagivel.
         tipo_acao = acao.get("tipo", "mensagem")
 
         if tipo_acao == "coletar":
@@ -162,7 +161,7 @@ class GerenciadorInteracao:
         self.tempo_mensagem_mundo = float(acao.get("duracao", 2.6))
 
     def _desenhar_estrela(self, surface, cx, cy, raio_externo, raio_interno, num_pontas, cor):
-        """Desenha uma estrela preenchida com scanline_fill."""
+        # Desenha uma estrela preenchida com scanline_fill.
         pontos = []
         for i in range(num_pontas * 2):
             ang = math.pi / num_pontas * i - math.pi / 2
@@ -172,7 +171,7 @@ class GerenciadorInteracao:
             scanline_fill(surface, pontos, cor)
 
     def desenhar(self, screen, camera, viewport):
-        """Renderiza estrelas, prompts, mensagens e sobreposicao de papel."""
+        # Renderiza estrelas, prompts, mensagens e sobreposicao de papel.
 
         viewport_rect = pygame.Rect(
             viewport[0],
@@ -183,7 +182,6 @@ class GerenciadorInteracao:
         old_clip = screen.get_clip()
         screen.set_clip(viewport_rect)
 
-        # Estrelas pulsantes sobre interagiveis disponiveis.
         t = pygame.time.get_ticks() / 500.0
         for objeto in self._interagiveis_visiveis:
             wx, wy = objeto.obter_centro()
@@ -197,7 +195,6 @@ class GerenciadorInteracao:
             alfa = int(180 + 75 * math.sin(t * 2))
             cor = (255, 255, 255, alfa)
 
-            # Surface temporaria para alpha da estrela.
             tam = int(raio * 2) + 4
             estrela_rect = pygame.Rect(sx - tam // 2, sy - tam // 2, tam, tam)
             if not estrela_rect.colliderect(viewport_rect):

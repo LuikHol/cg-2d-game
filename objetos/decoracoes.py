@@ -23,6 +23,7 @@ def _blit_dentro_da_viewport(surface, sprite, pos, viewport):
         surface.set_clip(old_clip)
 
 def desenhar_coroa_estatua(surface, camera, viewport, inventario=None):
+    # Desenha a coroa vermelha sobre a gata no quarto e some ao ser coletado.
     from objetos import estado_puzzle
     if inventario is not None and inventario.tem("coroa_vermelha"):
         return
@@ -40,7 +41,7 @@ def desenhar_coroa_estatua(surface, camera, viewport, inventario=None):
 
 
 def desenhar_pote_urso(surface, camera, viewport, inventario=None):
-    """Desenha o pote de mel sobre o urso do corredor e some ao ser coletado."""
+    # Desenha o pote de mel sobre o urso do corredor e some ao ser coletado.
     from objetos import estado_puzzle
     if inventario is not None and inventario.tem("pote_mel"):
         return
@@ -57,7 +58,7 @@ def desenhar_pote_urso(surface, camera, viewport, inventario=None):
 
 
 def desenhar_livro_coala(surface, camera, viewport, inventario=None):
-    """Desenha o livro laranja sobre a estatua do coala e some ao ser coletado."""
+    # Desenha o livro laranja sobre a estatua do coala e some ao ser coletado.
     from objetos import estado_puzzle
     if inventario is not None and inventario.tem("livro_laranja"):
         return
@@ -81,7 +82,7 @@ _CIRCULOS_TAPETE = [
 _ITENS_TAPETE = ["coroa_vermelha", "livro_laranja", "pote_mel"]
 
 def desenhar_itens_tapete(surface, camera, viewport):
-    """Desenha os itens já depositados nos círculos do tapete do quarto da rainha."""
+    # Desenha os itens já depositados nos círculos do tapete do quarto da rainha.
     from objetos import estado_puzzle
     slots = estado_puzzle.obter_slots()
     escala = (viewport[2] - viewport[0]) / (camera[2] - camera[0])

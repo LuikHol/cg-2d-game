@@ -5,7 +5,7 @@ from render.utils_geometrias import limites_poligono
 
 
 class ComponenteInteragivel:
-    """Componente base de interacao por area no mundo."""
+    # Componente base de interacao por area no mundo.
 
     def __init__(self, retangulo_area, acao, tecla=pygame.K_e):
         self.retangulo_area = retangulo_area
@@ -15,18 +15,18 @@ class ComponenteInteragivel:
 
     @classmethod
     def do_poligono(cls, poligono, acao, tecla=pygame.K_e, margem=4):
-        """Cria componente a partir do bounding box de um poligono."""
+        # Cria componente a partir do bounding box de um poligono.
         esquerda, topo, direita, base = limites_poligono(poligono, margem=margem)
         largura = int(direita - esquerda)
         altura = int(base - topo)
         return cls(pygame.Rect(esquerda, topo, largura, altura), acao, tecla)
 
     def pode_interagir(self, retangulo_ator):
-        """Retorna True se o ator colide com a area interativa."""
+        # Retorna True se o ator colide com a area interativa.
         return retangulo_ator.colliderect(self.retangulo_area)
 
     def tentar_interagir(self, teclas, retangulo_ator):
-        """Dispara a acao apenas na borda de subida da tecla."""
+        # Dispara a acao apenas na borda de subida da tecla.
         pressionado = bool(teclas[self.tecla])
         acionado = False
 

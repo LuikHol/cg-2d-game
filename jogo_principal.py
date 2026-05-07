@@ -143,7 +143,6 @@ class TestGameApp:
         return dx, dy
 
     def _spawn_perseguidora_atras_do_player(self, dados_room):
-        """Cria a perseguidora atras do jogador."""
         direcoes = {
             "esquerda": (-1.0, 0.0),
             "direita": (1.0, 0.0),

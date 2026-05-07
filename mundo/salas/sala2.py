@@ -31,7 +31,6 @@ def criar_sala2():
         }
 
     def obstaculo(pts):
-        # Obstaculos preenchidos por scanline_fill em render/desenhar_item.
         return {
             "poligono": pts,
             "cor_preenchimento": COR_OBSTACULO,

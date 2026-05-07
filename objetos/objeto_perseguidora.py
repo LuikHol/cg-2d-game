@@ -1,4 +1,3 @@
-"""Objeto perseguidora que persegue o jogador na sala 2."""
 import math
 from pathlib import Path
 
@@ -11,7 +10,7 @@ from render.viewport import transformar_pontos
 
 
 class ObjetoPerseguidora:
-    """Inimiga que segue o jogador com colisao e sprite animado."""
+    # Inimiga que segue o jogador com colisao e sprite animado.
 
     def __init__(self, x, y, tamanho=22):
         self.x = float(x)
@@ -43,7 +42,7 @@ class ObjetoPerseguidora:
         return False
 
     def _tentar_desgrudar(self, alvo_x, alvo_y, static_colliders):
-        """Aplica pequeno desvio lateral para escapar de quinas quando travada."""
+        # Aplica pequeno desvio lateral para escapar de quinas quando travada.
         vetor_x = alvo_x - self.x
         vetor_y = alvo_y - self.y
         dir_x, dir_y = self._normalizar_vetor(vetor_x, vetor_y)
@@ -77,7 +76,7 @@ class ObjetoPerseguidora:
         return x / norma, y / norma
 
     def _simular_passo(self, dir_x, dir_y, dt, static_colliders):
-        """Simula um passo para avaliar se a direcao ajuda a contornar obstaculos."""
+        # Simula um passo para avaliar se a direcao ajuda a contornar obstaculos.
         atual = self.collider.obter_rect_do_centro(self.x, self.y)
         move_x = dir_x * self.velocidade * dt
         move_y = dir_y * self.velocidade * dt
@@ -85,7 +84,7 @@ class ObjetoPerseguidora:
         return float(resolvido.centerx), float(resolvido.centery)
 
     def _escolher_direcao(self, alvo_x, alvo_y, dt, static_colliders):
-        """Escolhe direcao com melhor progresso ao alvo, testando desvios locais."""
+        # Escolhe direcao com melhor progresso ao alvo, testando desvios locais.
         vetor_x = alvo_x - self.x
         vetor_y = alvo_y - self.y
         distancia = math.hypot(vetor_x, vetor_y)
@@ -207,7 +206,7 @@ class ObjetoPerseguidora:
         return superficie
 
     def atualizar(self, alvo_x, alvo_y, dt, static_colliders):
-        """Atualiza perseguicao, colisao e animacao."""
+        # Atualiza perseguicao, colisao e animacao.
         if not math.isfinite(self.x) or not math.isfinite(self.y):
             self.x, self.y = self.ultima_posicao_valida
 

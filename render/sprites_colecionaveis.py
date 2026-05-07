@@ -23,7 +23,7 @@ def _desenhar_pattern(pattern, palette, pixel_size):
 
 
 def obter_sprite_colecionavel(item_name, pixel_size=1):
-    """Retorna sprite pixel-art em cache para itens coletaveis."""
+    # Retorna sprite pixel-art em cache para itens coletaveis.
     item = str(item_name)
     tamanho_pixel = max(1, int(pixel_size))
     chave = (item, tamanho_pixel)
