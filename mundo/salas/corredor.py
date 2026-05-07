@@ -2,7 +2,7 @@ import pygame
 
 from objetos.componentes import ComponenteColisaoEstatica
 from objetos.objeto_interagivel import ObjetoInterativo
-from mundo.salas.utils import foreground_img, poligono_de_chao
+from mundo.salas.utils import foreground_img
 
 
 def criar_corredor():

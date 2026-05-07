@@ -1,6 +1,4 @@
-import math
 import pygame
-
 from render.preenchimento import scanline_fill
 from render.viewport import transformar_pontos
 from render.utils_geometrias import pontos_elipse
@@ -13,11 +11,6 @@ from configs.config_jogo import (
 
 _light_cache = {}
 _ambient_cache = {}
-
-
-def gerar_pontos_elipse(cx, cy, rx, ry, segmentos=56):
-    return pontos_elipse(cx, cy, rx, ry, segmentos)
-
 
 def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
     rx_base = int(radius_x if radius_x is not None else RAIO_LUZ_X)
@@ -38,8 +31,8 @@ def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
         remove_alpha = int(ALFA_ESCURIDAO_AMBIENTE * (1.0 - t) ** 2)
         rx = max(8, int(rx_base * t))
         ry = max(6, int(ry_base * t))
-        pontos_elipse = gerar_pontos_elipse(cx, cy, rx, ry, segmentos=56)
-        scanline_fill(mask, pontos_elipse, (0, 0, 0, remove_alpha))
+        pts = pontos_elipse(cx, cy, rx, ry, segmentos=56)
+        scanline_fill(mask, pts, (0, 0, 0, remove_alpha))
 
     _light_cache[key] = (mask, cx, cy)
     return _light_cache[key]

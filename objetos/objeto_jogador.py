@@ -1,6 +1,5 @@
 """Objeto do jogador com animacao, fisicas e renderizacao."""
 import pygame
-import math
 from pathlib import Path
 from render.poligono import desenhar_poligono
 from render.superficie import escalar_superficie, espelhar_x
@@ -49,7 +48,7 @@ class ObjetoJogador:
             quadros_baixo = self._carregar_quadros_da_faixa(faixa_baixo, altura_alvo)
             quadros_direita = self._carregar_quadros_da_faixa(faixa_lado, altura_alvo)
             quadros_cima = self._carregar_quadros_da_faixa(faixa_cima, altura_alvo)
-            quadros_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_direita]
+            quadros_esquerda = [espelhar_x(quadro) for quadro in quadros_direita]
 
             quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda = self._normalizar_animacoes(
                 quadros_baixo,
@@ -116,7 +115,7 @@ class ObjetoJogador:
             # Todos os 4 frames laterais estao virados para a direita;
             # left é gerado espelhando.
             quadros_direita = preparar_quadros(linhas[1])
-            quadros_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_direita]
+            quadros_esquerda = [espelhar_x(quadro) for quadro in quadros_direita]
             quadros_cima = preparar_quadros(linhas[2])
 
             # Normaliza todos os frames para o mesmo tamanho e ancora no "pe"
@@ -160,7 +159,7 @@ class ObjetoJogador:
                     )
                 )
             quadros_base = quadros_base_preparados
-            quadros_base_esquerda = [self._espelhar_superficie_x(quadro) for quadro in quadros_base]
+            quadros_base_esquerda = [espelhar_x(quadro) for quadro in quadros_base]
             self.animacoes = {
                 "baixo": quadros_base,
                 "cima": quadros_base,
@@ -279,9 +278,6 @@ class ObjetoJogador:
 
         return padronizar(quadros_baixo), padronizar(quadros_cima), padronizar(quadros_direita), padronizar(quadros_esquerda)
 
-    def _espelhar_superficie_x(self, surface):
-        """Espelha uma superficie horizontalmente."""
-        return espelhar_x(surface)
 
     def _gerar_pontos_elipse(self, width, height, segmentos=28):
         """Gera poligono aproximando uma elipse para usar com scanline_fill."""

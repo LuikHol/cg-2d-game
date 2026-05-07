@@ -2,7 +2,7 @@ import math
 import pygame
 from efeitos_sonoros import tocar_efeito_se_existir
 from render.poligono import desenhar_poligono
-from render.preenchimento import scanline_fill
+from render.preenchimento import scanline_fill, scanline_texture
 from render.viewport import mundo_para_viewport
 from render.superficie import escalar_superficie
 
@@ -11,7 +11,6 @@ FONTE_UI_TAMANHO_PROMPT = 15
 FONTE_UI_TAMANHO_MUNDO = 20
 FONTE_UI_TAMANHO_TITULO_PAPEL = 38
 FONTE_UI_TAMANHO_CORPO_PAPEL = 20
-from render.preenchimento import scanline_texture
 
 class GerenciadorInteracao:
     """Gerencia prompts, estrelas de interacao e leitura de papeis."""
@@ -254,9 +253,6 @@ class GerenciadorInteracao:
         else:
             scanline_fill(screen, papel, (233, 222, 188))
             desenhar_poligono(screen, papel, (95, 82, 54))
-
-        # Borda discreta para evitar contorno forte/estranho.
-        # desenhar_poligono(screen, papel, (95, 82, 54))
 
         titulo = self.papel_aberto.get("titulo", "Documento")
         linhas = self.papel_aberto.get("linhas", [])
