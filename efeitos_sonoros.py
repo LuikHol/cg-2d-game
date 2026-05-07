@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pygame
 
-from configs.audio_config import EXTENSOES_SUPORTADAS, PASTA_SFX_PADRAO, VOLUME_SFX_PADRAO
+from configs.config_audio import EXTENSOES_SUPORTADAS, PASTA_SFX_PADRAO, VOLUME_SFX_PADRAO
 
 _sons_em_cache: dict[Path, pygame.mixer.Sound] = {}
 

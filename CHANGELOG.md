@@ -22,8 +22,8 @@ Funcoes centralizadas:
 
 Impacto:
 
-1. `render/transformacoes.py`, `objects/polygon_object.py` e `objects/objeto_interagivel.py` deixaram de recalcular o centro manualmente.
-2. `render/iluminacao.py` e `objects/player_object.py` passaram a usar a mesma logica para gerar elipses.
+1. `render/transformacoes.py`, `objetos/polygon_object.py` e `objetos/objeto_interagivel.py` deixaram de recalcular o centro manualmente.
+2. `render/iluminacao.py` e `objetos/player_object.py` passaram a usar a mesma logica para gerar elipses.
 3. A area interativa de objetos agora usa uma funcao unica para bounds.
 
 Na pratica, isso reduz divergencia entre modulos e deixa os calculos mais consistentes.
@@ -59,9 +59,9 @@ Arquivos atualizados para usar o novo modulo:
 
 1. `menu/main_menu.py`
 2. `menu/inventory_hud.py`
-3. `objects/interaction_manager.py`
-4. `objects/player_object.py`
-5. `objects/polygon_object.py`
+3. `objetos/interaction_manager.py`
+4. `objetos/player_object.py`
+5. `objetos/polygon_object.py`
 6. `render/iluminacao.py`
 7. `render/sala_renderer.py`
 
@@ -76,16 +76,16 @@ Na pratica, o projeto continua preenchendo poligonos do mesmo jeito, mas agora e
 
 Antes, a logica estava separada entre:
 
-1. `objects/componente_interagivel.py`
-2. `objects/objeto_interagivel.py`
+1. `objetos/componente_interagivel.py`
+2. `objetos/objeto_interagivel.py`
 
-Agora `ComponenteInteragivel` foi movido para `objects/objeto_interagivel.py`.
+Agora `ComponenteInteragivel` foi movido para `objetos/objeto_interagivel.py`.
 
 O funcionamento nao mudou: `ObjetoInterativo` continua criando `self.component` como antes.
 
 Arquivo removido:
 
-1. `objects/componente_interagivel.py`
+1. `objetos/componente_interagivel.py`
 
 Na pratica, isso reduz um arquivo que existia separado mesmo tendo uso muito acoplado ao objeto principal.
 
@@ -139,7 +139,7 @@ O efeito disso e mais consistencia e menos chance de um modulo evoluir diferente
 
 ## Arquivos removidos
 
-1. `objects/componente_interagivel.py`
+1. `objetos/componente_interagivel.py`
 2. `render/scanline.py`
 3. `render/textura.py`
 4. `render/linha.py`

@@ -1,9 +1,9 @@
 import math
 import pygame
 
-from render.collectible_sprites import get_collectible_sprite
+from render.sprites_colecionaveis import obter_sprite_colecionavel
 from render.pixel import setPixel
-from render.viewport import world_to_viewport
+from render.viewport import mundo_para_viewport
 
 _cache_coroa_estatua = {}
 
@@ -63,17 +63,17 @@ def _get_coroa_vermelha(pixel_size):
 
 def desenhar_coroa_estatua(surface, camera, viewport, inventario=None):
     """Desenha a coroa vermelha flutuante sobre a estátua gata (some ao ser coletada)."""
-    from objects import puzzle_state
+    from objetos import estado_puzzle
     if inventario is not None and inventario.tem("coroa_vermelha"):
         return
-    if any(s == "coroa_vermelha" for s in puzzle_state.get_slots()):
+    if any(s == "coroa_vermelha" for s in estado_puzzle.obter_slots()):
         return
     estatua_wx, estatua_wy, estatua_ww = 259, 57, 102
     escala = (viewport[2] - viewport[0]) / (camera[2] - camera[0])
     pixel_size = max(2, int(escala * 7))
     coroa_surf = _get_coroa_vermelha(pixel_size)
     cx_mundo = estatua_wx + estatua_ww // 2
-    cx_tela, cy_tela = world_to_viewport(cx_mundo, estatua_wy, camera, viewport)
+    cx_tela, cy_tela = mundo_para_viewport(cx_mundo, estatua_wy, camera, viewport)
     oscilacao = int(math.sin(pygame.time.get_ticks() * 0.003) * 3)
     pos = (cx_tela - coroa_surf.get_width() // 2, cy_tela - coroa_surf.get_height() + oscilacao)
     _blit_dentro_da_viewport(surface, coroa_surf, pos, viewport)
@@ -81,17 +81,17 @@ def desenhar_coroa_estatua(surface, camera, viewport, inventario=None):
 
 def desenhar_pote_urso(surface, camera, viewport, inventario=None):
     """Desenha o pote de mel sobre o urso do corredor e some ao ser coletado."""
-    from objects import puzzle_state
+    from objetos import estado_puzzle
     if inventario is not None and inventario.tem("pote_mel"):
         return
-    if any(s == "pote_mel" for s in puzzle_state.get_slots()):
+    if any(s == "pote_mel" for s in estado_puzzle.obter_slots()):
         return
 
     pote_wx, pote_wy = 1368, 127
     escala = (viewport[2] - viewport[0]) / (camera[2] - camera[0])
     pixel_size = max(2, int(escala * 3))
-    pote_surf = get_collectible_sprite("pote_mel", pixel_size=pixel_size)
-    px_tela, py_tela = world_to_viewport(pote_wx, pote_wy, camera, viewport)
+    pote_surf = obter_sprite_colecionavel("pote_mel", pixel_size=pixel_size)
+    px_tela, py_tela = mundo_para_viewport(pote_wx, pote_wy, camera, viewport)
     pos = (px_tela - pote_surf.get_width() // 2, py_tela - pote_surf.get_height() // 2)
     _blit_dentro_da_viewport(surface, pote_surf, pos, viewport)
 
@@ -107,8 +107,8 @@ _ITENS_TAPETE = ["coroa_vermelha", "livro_laranja", "pote_mel"]
 
 def desenhar_itens_tapete(surface, camera, viewport):
     """Desenha os itens já depositados nos círculos do tapete do quarto da rainha."""
-    from objects import puzzle_state
-    slots = puzzle_state.get_slots()
+    from objetos import estado_puzzle
+    slots = estado_puzzle.obter_slots()
     escala = (viewport[2] - viewport[0]) / (camera[2] - camera[0])
     pixel_size = max(2, int(escala * 4))
 
@@ -116,15 +116,15 @@ def desenhar_itens_tapete(surface, camera, viewport):
         if item is None:
             continue
         cx_mundo, cy_mundo = _CIRCULOS_TAPETE[i]
-        sprite = get_collectible_sprite(item, pixel_size=pixel_size)
-        sx, sy = world_to_viewport(cx_mundo, cy_mundo, camera, viewport)
+        sprite = obter_sprite_colecionavel(item, pixel_size=pixel_size)
+        sx, sy = mundo_para_viewport(cx_mundo, cy_mundo, camera, viewport)
         pos = (sx - sprite.get_width() // 2, sy - sprite.get_height() // 2)
         _blit_dentro_da_viewport(surface, sprite, pos, viewport)
 
     # Brilha no centro do tapete quando resolvido.
-    if puzzle_state.tapete_resolvido():
+    if estado_puzzle.tapete_resolvido():
         centro_wx, centro_wy = 467, 432
-        sx, sy = world_to_viewport(centro_wx, centro_wy, camera, viewport)
+        sx, sy = mundo_para_viewport(centro_wx, centro_wy, camera, viewport)
         t = pygame.time.get_ticks() / 400.0
         raio = int(18 + math.sin(t) * 6)
         alpha = int(180 + math.sin(t * 1.5) * 60)
@@ -136,16 +136,16 @@ def desenhar_itens_tapete(surface, camera, viewport):
 
 def desenhar_livro_coala(surface, camera, viewport, inventario=None):
     """Desenha o livro laranja sobre a estatua do coala e some ao ser coletado."""
-    from objects import puzzle_state
+    from objetos import estado_puzzle
     if inventario is not None and inventario.tem("livro_laranja"):
         return
-    if any(s == "livro_laranja" for s in puzzle_state.get_slots()):
+    if any(s == "livro_laranja" for s in estado_puzzle.obter_slots()):
         return
 
     livro_wx, livro_wy = 335, 575
     escala = (viewport[2] - viewport[0]) / (camera[2] - camera[0])
     pixel_size = max(2, int(escala * 5))
-    livro_surf = get_collectible_sprite("livro_laranja", pixel_size=pixel_size)
-    lx_tela, ly_tela = world_to_viewport(livro_wx, livro_wy, camera, viewport)
+    livro_surf = obter_sprite_colecionavel("livro_laranja", pixel_size=pixel_size)
+    lx_tela, ly_tela = mundo_para_viewport(livro_wx, livro_wy, camera, viewport)
     pos = (lx_tela - livro_surf.get_width() // 2, ly_tela - livro_surf.get_height() // 2)
     _blit_dentro_da_viewport(surface, livro_surf, pos, viewport)

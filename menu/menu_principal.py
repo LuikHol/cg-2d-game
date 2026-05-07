@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pygame
 
-from configs.menu_config import (
+from configs.config_menu import (
     ALTURA,
     COR_BOTAO,
     COR_BOTAO_BORDA,
@@ -145,10 +145,10 @@ def obter_animacoes_menu():
         )
 
         ANIMACOES_MENU = {
-            "down": quadros_baixo,
-            "up": quadros_cima,
-            "right": quadros_direita,
-            "left": quadros_esquerda,
+            "baixo": quadros_baixo,
+            "cima": quadros_cima,
+            "direita": quadros_direita,
+            "esquerda": quadros_esquerda,
         }
         return ANIMACOES_MENU
 
@@ -158,7 +158,7 @@ def obter_animacoes_menu():
         [(22, 24), (74, 24), (74, 120), (22, 120)],
         (112, 100, 196),
     )
-    ANIMACOES_MENU = {"down": [fallback] * 4, "up": [fallback] * 4, "right": [fallback] * 4, "left": [fallback] * 4}
+    ANIMACOES_MENU = {"baixo": [fallback] * 4, "cima": [fallback] * 4, "direita": [fallback] * 4, "esquerda": [fallback] * 4}
     return ANIMACOES_MENU
 
 
@@ -204,7 +204,7 @@ def obter_coroa(tamanho_pixel=4):
 def desenhar_personagem_menu(surface, tempo_segundos):
     animacoes = obter_animacoes_menu()
     indice_frame = int(tempo_segundos * 6.0) % 4
-    sprite = animacoes["down"][indice_frame % len(animacoes["down"])]
+    sprite = animacoes["baixo"][indice_frame % len(animacoes["baixo"])]
     coroa = obter_coroa(5)
 
     centro_x = int(LARGURA * 0.78)

@@ -1,7 +1,7 @@
 import pygame
 
-from objects.components import ComponenteColisaoEstatica
-from objects.objeto_interagivel import ObjetoInterativo
+from objetos.componentes import ComponenteColisaoEstatica
+from objetos.objeto_interagivel import ObjetoInterativo
 
 def criar_quarto_rainha():
     colisao_estatica = ComponenteColisaoEstatica
@@ -17,9 +17,9 @@ def criar_quarto_rainha():
         (185, 175, 120),
         (225, 210, 140),
         {
-            "type": "message",
-            "text": "Do calor da realeza, ao dourado da docura, os três guardiões carregam a chave da abertura",
-            "duration": 5,
+            "tipo": "mensagem",
+            "texto": "Do calor da realeza, ao dourado da docura, os três guardiões carregam a chave da abertura",
+            "duracao": 5,
         },
     )
 
@@ -29,13 +29,13 @@ def criar_quarto_rainha():
         (120, 80, 40),
         (160, 110, 55),
         {
-            "type": "paper",
-            "title": "",
-            "lines": [],
-            "texture_path": "texturas/documentos/diario_rainha.png",
+            "tipo": "documento",
+            "titulo": "",
+            "linhas": [],
+            "caminho_textura": "texturas/documentos/diario_rainha.png",
         },
-        texture_key="paper",
-        show_border=True,
+        chave_textura="paper",
+        mostrar_borda=True,
     )
 
     # Três círculos do tapete – ordem horária: topo=livro, direita=pote, esquerda=coroa.
@@ -46,49 +46,49 @@ def criar_quarto_rainha():
     inter_coroa_tapete = ObjetoInterativo(
         "circulo do tapete", circulo_coroa, None, None,
         {
-            "type": "place_item",
+            "tipo": "depositar",
             "slot": 0,
             "mensagem_ok": "Item depositado no tapete!",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
     inter_livro_tapete = ObjetoInterativo(
         "circulo do tapete", circulo_livro, None, None,
         {
-            "type": "place_item",
+            "tipo": "depositar",
             "slot": 1,
             "mensagem_ok": "Item depositado no tapete!",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
     inter_pote_tapete = ObjetoInterativo(
         "circulo do tapete", circulo_pote, None, None,
         {
-            "type": "place_item",
+            "tipo": "depositar",
             "slot": 2,
             "mensagem_ok": "Item depositado no tapete!",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
 
     return {
         "nome": "quarto_rainha",
-        "background_texture": "texturas/cenario/quarto_rainha/quartorainha.png",
-        "background_zoom": 1.0,
-        "viewport_margin": 50,
+        "textura_fundo": "texturas/cenario/quarto_rainha/quartorainha.png",
+        "zoom_fundo": 1.0,
+        "margem_viewport": 50,
         "poligonos": [
             inter_diario_rainha.como_item_desenhavel()
         ],
         "portas_visuais": [],
-        "interactables": [inter_bilhete, inter_coroa_tapete, inter_livro_tapete, inter_pote_tapete, inter_diario_rainha],
-        "foreground": [
+        "interagiveis": [inter_bilhete, inter_coroa_tapete, inter_livro_tapete, inter_pote_tapete, inter_diario_rainha],
+        "primeiro_plano": [
         ],
-        "lights": [
+        "luzes": [
             {"x": 290, "y": 492, "rx": 52, "ry": 56, "steps": 24},
             {"x": 467, "y": 332, "rx": 56, "ry": 50, "steps": 24},
             {"x": 639, "y": 492, "rx": 54, "ry": 51, "steps": 24},
         ],
-        "colliders": [
+        "colidores": [
             # Parede superior com vao da porta ao centro
             colisao_estatica(1, 0, 17, 747),
             colisao_estatica(4, 735, 988, 13),
@@ -107,9 +107,9 @@ def criar_quarto_rainha():
         ],
         "transicoes": [
             {
-                "trigger": porta_corredor,
-                "target": "corredor",
-                "spawn": (40, 390),
+                "gatilho": porta_corredor,
+                "destino": "corredor",
+                "posicao_spawn": (40, 390),
             }
         ],
     }

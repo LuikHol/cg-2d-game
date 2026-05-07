@@ -1,7 +1,7 @@
 import pygame
 
-from objects.components import ComponenteColisaoEstatica
-from objects.objeto_interagivel import ObjetoInterativo
+from objetos.componentes import ComponenteColisaoEstatica
+from objetos.objeto_interagivel import ObjetoInterativo
 
 
 def criar_sala2():
@@ -16,16 +16,16 @@ def criar_sala2():
         (170, 155, 110),
         None,
         {
-            "type": "paper",
-            "title": "Folha de Papel",
-            "lines": [
+            "tipo": "documento",
+            "titulo": "Folha de Papel",
+            "linhas": [
                 "Corredor 2",
                 "Nao olhe para tras",
                 "Use E para fechar",
             ],
         },
-        texture_key="paper",
-        show_border=False,
+        chave_textura="paper",
+        mostrar_borda=False,
     )
 
     parede_teto = [(0, 0), (largura_sala, 0), (largura_sala, 180), (0, 180)]
@@ -42,19 +42,19 @@ def criar_sala2():
 
     def parede(pts):
         return {
-            "polygon": pts,
-            "fill_color": COR_PAREDE,
-            "border_color": COR_BORDA,
-            "show_border": True,
+            "poligono": pts,
+            "cor_preenchimento": COR_PAREDE,
+            "cor_borda": COR_BORDA,
+            "mostrar_borda": True,
         }
 
     def obstaculo(pts):
         # Obstaculos preenchidos por scanline_fill em render/desenhar_item.
         return {
-            "polygon": pts,
-            "fill_color": COR_OBSTACULO,
-            "border_color": COR_OBSTACULO_BORDA,
-            "show_border": True,
+            "poligono": pts,
+            "cor_preenchimento": COR_OBSTACULO,
+            "cor_borda": COR_OBSTACULO_BORDA,
+            "mostrar_borda": True,
         }
 
     # Slalom alternado: obriga o player a subir/descer durante a fuga.
@@ -84,14 +84,14 @@ def criar_sala2():
 
     return {
         "nome": "sala_2",
-        "background_texture": "texturas/cenario/chaocorredor2.png",
-        "background_bounds": (0, 0, largura_sala, 750),
-        "camera_bounds": (0, 0, largura_sala, 750),
-        "camera_viewport_width": 1000,
-        "camera_viewport_height": 750,
-        "viewport_margin": 100,
-        "background_scale": 1.5,
-        "tile_world_width": 1600,
+        "textura_fundo": "texturas/cenario/chaocorredor2.png",
+        "limites_fundo": (0, 0, largura_sala, 750),
+        "limites_camera": (0, 0, largura_sala, 750),
+        "largura_camera": 1000,
+        "altura_camera": 750,
+        "margem_viewport": 100,
+        "escala_fundo": 1.5,
+        "largura_tile_mundo": 1600,
         "poligonos": [
             parede(parede_teto),
             parede(parede_chao),
@@ -104,8 +104,8 @@ def criar_sala2():
         "portas_visuais": [
             ([(0, 320), (16, 320), (16, 440), (0, 440)], (170, 125, 70), (220, 180, 110)),
         ],
-        "interactables": [inter_pergaminho],
-        "colliders": [
+        "interagiveis": [inter_pergaminho],
+        "colidores": [
             colisao_estatica(0, 0, largura_sala, 180),
             colisao_estatica(0, 600, largura_sala, 150),
             colisao_estatica(0, 180, 12, 140),
@@ -115,9 +115,9 @@ def criar_sala2():
         ],
         "transicoes": [
             {
-                "trigger": pygame.Rect(0, 350, 12, 80),
-                "target": "corredor",
-                "spawn": (1540, 390),
+                "gatilho": pygame.Rect(0, 350, 12, 80),
+                "destino": "corredor",
+                "posicao_spawn": (1540, 390),
             }
         ],
     }

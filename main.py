@@ -1,5 +1,5 @@
-from menu.main_menu import menu_principal
-from test_game import TestGameApp
+from menu.menu_principal import menu_principal
+from jogo_principal import TestGameApp
 
 
 def executar_jogo():

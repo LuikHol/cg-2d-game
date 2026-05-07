@@ -1,4 +1,4 @@
-def world_to_viewport(x, y, win, vp):
+def mundo_para_viewport(x, y, win, vp):
     # Desempacota os limites da janela no mundo e da viewport na tela.
     wxmin, wymin, wxmax, wymax = win
     vxmin, vymin, vxmax, vymax = vp
@@ -18,7 +18,7 @@ def transformar_pontos(pontos, win, vp):
     novos = []  # lista que vai receber os pontos ja transformados
     for x, y in pontos:
         # Converte cada ponto do espaco do mundo para coordenadas de tela.
-        xv, yv = world_to_viewport(x, y, win, vp)
+        xv, yv = mundo_para_viewport(x, y, win, vp)
         novos.append((xv, yv))
     return novos
 

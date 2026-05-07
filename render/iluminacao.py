@@ -3,8 +3,8 @@ import pygame
 
 from render.preenchimento import scanline_fill
 from render.viewport import transformar_pontos
-from render.geometry_utils import ellipse_points
-from configs.game_config import (
+from render.utils_geometrias import pontos_elipse
+from configs.config_jogo import (
     ALFA_ESCURIDAO_AMBIENTE,
     RAIO_LUZ_X,
     RAIO_LUZ_Y,
@@ -16,7 +16,7 @@ _ambient_cache = {}
 
 
 def gerar_pontos_elipse(cx, cy, rx, ry, segmentos=56):
-    return ellipse_points(cx, cy, rx, ry, segmentos)
+    return pontos_elipse(cx, cy, rx, ry, segmentos)
 
 
 def obter_mascara_luz(radius_x=None, radius_y=None, steps=None):
@@ -65,14 +65,14 @@ def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
     px, py = transformar_pontos([(player_obj.x, player_obj.y)], camera, viewport)[0]
     centros_luz = [
         {
-            "screen": (px, py + int(player_obj.tamanho * 0.6)),
+            "posicao_tela": (px, py + int(player_obj.tamanho * 0.6)),
             "rx": RAIO_LUZ_X,
             "ry": RAIO_LUZ_Y,
             "steps": PASSOS_LUZ,
         }
     ]
 
-    for luz in room_data.get("lights", []):
+    for luz in room_data.get("luzes", []):
         wx = luz.get("x")
         wy = luz.get("y")
         if wx is None or wy is None:
@@ -80,7 +80,7 @@ def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
         sx, sy = transformar_pontos([(wx, wy)], camera, viewport)[0]
         centros_luz.append(
             {
-                "screen": (sx, sy),
+                "posicao_tela": (sx, sy),
                 "rx": int(luz.get("rx", 52)),
                 "ry": int(luz.get("ry", 42)),
                 "steps": int(luz.get("steps", PASSOS_LUZ)),
@@ -89,7 +89,7 @@ def desenhar_iluminacao(surface, player_obj, room_data, camera, viewport):
 
     sombra = obter_ambient_base(vw, vh).copy()
     for luz in centros_luz:
-        centro = luz["screen"]
+        centro = luz["posicao_tela"]
         mask, cx, cy = obter_mascara_luz(luz["rx"], luz["ry"], luz["steps"])
         sombra.blit(
             mask,

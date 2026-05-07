@@ -3,7 +3,7 @@ import pygame
 from efeitos_sonoros import tocar_efeito_se_existir
 from render.poligono import desenhar_poligono
 from render.preenchimento import scanline_fill
-from render.viewport import world_to_viewport as mundo_para_viewport
+from render.viewport import mundo_para_viewport
 from render.superficie import escalar_superficie
 
 FONTE_UI_NOME = "timesnewroman"
@@ -57,7 +57,7 @@ class GerenciadorInteracao:
             componente = objeto.component
 
             # Nao exibe itens de pickup que ja foram coletados.
-            if componente.acao.get("type") == "pickup":
+            if componente.acao.get("tipo") == "coletar":
                 nome_item = componente.acao.get("item")
                 if nome_item in self._pickups_coletados:
                     continue
@@ -100,9 +100,9 @@ class GerenciadorInteracao:
 
     def _aplicar_acao(self, acao, obj):
         """Executa a acao configurada para o interagivel."""
-        tipo_acao = acao.get("type", "message")
+        tipo_acao = acao.get("tipo", "mensagem")
 
-        if tipo_acao == "pickup":
+        if tipo_acao == "coletar":
             nome_item = acao.get("item")
             if nome_item in self._pickups_coletados:
                 return
@@ -111,16 +111,16 @@ class GerenciadorInteracao:
                 self._pickups_coletados.add(nome_item)
                 tocar_efeito_se_existir("pegar_item.mp3")
             self.mensagem_mundo = acao.get("mensagem", f"Pegou {nome_item}!")
-            self.pos_mensagem_mundo = obj.get_center()
+            self.pos_mensagem_mundo = obj.obter_centro()
             self.tempo_mensagem_mundo = 2.5
             return
 
-        if tipo_acao == "place_item":
-            from objects import puzzle_state
+        if tipo_acao == "depositar":
+            from objetos import estado_puzzle
             slot = acao.get("slot", -1)
             # Slot preenchido: devolve o item ao inventario.
-            if puzzle_state.slot_preenchido(slot):
-                item_devolvido = puzzle_state.retirar_item(slot)
+            if estado_puzzle.slot_preenchido(slot):
+                item_devolvido = estado_puzzle.retirar_item(slot)
                 if item_devolvido and self.inventario:
                     self.inventario.adicionar(item_devolvido)
                 return
@@ -128,20 +128,20 @@ class GerenciadorInteracao:
             item_na_mao = getattr(self, "item_em_mao", None)
             if not item_na_mao or not (self.inventario and self.inventario.tem(item_na_mao)):
                 item_na_mao = next(
-                    (i for i in puzzle_state.get_ordem() if self.inventario and self.inventario.tem(i)),
+                    (i for i in estado_puzzle.obter_ordem() if self.inventario and self.inventario.tem(i)),
                     None,
                 )
-            if item_na_mao and puzzle_state.colocar_item(slot, item_na_mao):
+            if item_na_mao and estado_puzzle.colocar_item(slot, item_na_mao):
                 self.inventario.remover(item_na_mao)
                 tocar_efeito_se_existir("colocar_item.mp3")
                 self.mensagem_mundo = acao.get("mensagem_ok", "Item colocado!")
-                self.pos_mensagem_mundo = obj.get_center()
+                self.pos_mensagem_mundo = obj.obter_centro()
                 self.tempo_mensagem_mundo = 2.5
             return
 
-        if tipo_acao == "paper":
+        if tipo_acao == "documento":
             textura = self.textura_papel
-            caminho_textura = acao.get("texture_path")
+            caminho_textura = acao.get("caminho_textura")
             e_imagem = False
             if caminho_textura:
                 if caminho_textura not in self._texture_cache:
@@ -149,18 +149,18 @@ class GerenciadorInteracao:
                 textura = self._texture_cache[caminho_textura]
                 e_imagem = True
             self.papel_aberto = {
-                "title": acao.get("title", "Anotacao"),
-                "lines": acao.get("lines", []),
+                "titulo": acao.get("titulo", "Anotacao"),
+                "linhas": acao.get("linhas", []),
                 "texture": textura,
-                "is_image": e_imagem,
+                "e_imagem": e_imagem,
             }
             self._papel_pode_fechar = False
             return
 
         # Fallback para mensagem comum acima do objeto.
-        self.mensagem_mundo = acao.get("text", "...")
-        self.pos_mensagem_mundo = obj.get_center()
-        self.tempo_mensagem_mundo = float(acao.get("duration", 2.6))
+        self.mensagem_mundo = acao.get("texto", "...")
+        self.pos_mensagem_mundo = obj.obter_centro()
+        self.tempo_mensagem_mundo = float(acao.get("duracao", 2.6))
 
     def _desenhar_estrela(self, surface, cx, cy, raio_externo, raio_interno, num_pontas, cor):
         """Desenha uma estrela preenchida com scanline_fill."""
@@ -187,7 +187,7 @@ class GerenciadorInteracao:
         # Estrelas pulsantes sobre interagiveis disponiveis.
         t = pygame.time.get_ticks() / 500.0
         for objeto in self._interagiveis_visiveis:
-            wx, wy = objeto.get_center()
+            wx, wy = objeto.obter_centro()
             sx, sy = mundo_para_viewport(wx, wy, camera, viewport)
 
             # Flutuacao vertical suave.
@@ -239,7 +239,7 @@ class GerenciadorInteracao:
         ]
 
         textura = self.papel_aberto.get("texture")
-        e_imagem = self.papel_aberto.get("is_image", False)
+        e_imagem = self.papel_aberto.get("e_imagem", False)
 
         if textura is not None and e_imagem:
             xs = [p[0] for p in papel]
@@ -258,8 +258,8 @@ class GerenciadorInteracao:
         # Borda discreta para evitar contorno forte/estranho.
         # desenhar_poligono(screen, papel, (95, 82, 54))
 
-        titulo = self.papel_aberto.get("title", "Documento")
-        linhas = self.papel_aberto.get("lines", [])
+        titulo = self.papel_aberto.get("titulo", "Documento")
+        linhas = self.papel_aberto.get("linhas", [])
 
         superficie_titulo = self.fonte_titulo_papel.render(titulo, True, (62, 44, 24))
         screen.blit(superficie_titulo, (largura_tela // 2 - superficie_titulo.get_width() // 2, altura_tela // 2 - 130))

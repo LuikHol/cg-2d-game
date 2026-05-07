@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pygame
-from configs.audio_config import (
+from configs.config_audio import (
     DESVANECIMENTO_MS_PADRAO,
     EXTENSOES_SUPORTADAS,
     PASTA_MUSICA_PADRAO,

@@ -13,10 +13,10 @@ def foreground_img(caminho, x_base, y_base, w_base, h_base, escala=1.0, draw_abo
     x = x_base - (w - w_base) // 2
     y = y_base - (h - h_base)
     return {
-        "image_path": caminho,
-        "rect": (x, y, w, h),
-        "preserve_aspect": True,
-        "draw_above_player": draw_above_player,
+        "caminho_imagem": caminho,
+        "retangulo": (x, y, w, h),
+        "manter_proporcao": True,
+        "acima_do_jogador": draw_above_player,
     }
 
 
@@ -27,17 +27,17 @@ def foreground_surface(surface, x_base, y_base, w_base, h_base, escala=1.0, draw
     x = x_base - (w - w_base) // 2
     y = y_base - (h - h_base)
     return {
-        "surface": surface,
-        "rect": (x, y, w, h),
-        "preserve_aspect": True,
-        "draw_above_player": draw_above_player,
+        "superficie": surface,
+        "retangulo": (x, y, w, h),
+        "manter_proporcao": True,
+        "acima_do_jogador": draw_above_player,
     }
 
 
 def poligono_de_chao(pontos, cor_preenchimento, cor_borda):
     return {
-        "polygon": pontos,
-        "fill_color": cor_preenchimento,
-        "border_color": cor_borda,
-        "skip_on_background": True,
+        "poligono": pontos,
+        "cor_preenchimento": cor_preenchimento,
+        "cor_borda": cor_borda,
+        "pular_se_fundo": True,
     }

@@ -6,38 +6,38 @@ class RoomManager:
         self._timer = 0.0
         self._locked = set()
 
-    def lock_room(self, target):
+    def trancar_sala(self, target):
         self._locked.add(target)
 
-    def unlock_room(self, target):
+    def destrancar_sala(self, target):
         self._locked.discard(target)
 
-    def get_room(self):
+    def obter_sala(self):
         return self.rooms[self.current_room]
 
-    def update(self, player, dt):
+    def atualizar(self, player, dt):
         if self._timer > 0.0:
             self._timer -= dt
             return None
 
-        room = self.get_room()
-        player_rect = player.collider.get_rect_from_center(player.x, player.y)
+        room = self.obter_sala()
+        player_rect = player.collider.obter_rect_do_centro(player.x, player.y)
         for transicao in room["transicoes"]:
-            if player_rect.colliderect(transicao["trigger"]):
-                alvo = transicao["target"]
+            if player_rect.colliderect(transicao["gatilho"]):
+                alvo = transicao["destino"]
                 if alvo in self._locked:
                     self._timer = self._cooldown
-                    return {"blocked": True, "target": alvo}
+                    return {"bloqueado": True, "destino": alvo}
                 sala_origem = self.current_room
                 self.current_room = alvo
-                spawn_x, spawn_y = transicao["spawn"]
+                spawn_x, spawn_y = transicao["posicao_spawn"]
                 player.x = float(spawn_x)
                 player.y = float(spawn_y)
                 self._timer = self._cooldown
                 return {
-                    "source": sala_origem,
-                    "target": self.current_room,
-                    "spawn": (float(spawn_x), float(spawn_y)),
+                    "origem": sala_origem,
+                    "destino": self.current_room,
+                    "posicao_spawn": (float(spawn_x), float(spawn_y)),
                 }
 
         return None

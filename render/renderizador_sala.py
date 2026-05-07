@@ -4,7 +4,7 @@ from pathlib import Path
 from render.poligono import desenhar_poligono
 from render.preenchimento import scanline_fill, scanline_texture
 from render.clipping import clip_polygon_com_cohen_sutherland
-from render.viewport import transformar_pontos, world_to_viewport
+from render.viewport import transformar_pontos, mundo_para_viewport
 from render.superficie import escalar_superficie
 
 _background_cache = {}
@@ -15,16 +15,16 @@ _tile_cache = {}  # Armazena tiles extraídos das texturas
 
 
 def item_eh_chao_base(item):
-    return isinstance(item, dict) and item.get("skip_on_background", False)
+    return isinstance(item, dict) and item.get("pular_se_fundo", False)
 
 
 def desenhar_item(surface, item, camera, viewport, textures, debug_clip=False):
     if isinstance(item, dict):
-        pontos = item["polygon"]
-        cor_fill = item.get("fill_color")
-        cor_borda = item.get("border_color")
-        texture_key = item.get("texture_key")
-        show_border = item.get("show_border", True)
+        pontos = item["poligono"]
+        cor_fill = item.get("cor_preenchimento")
+        cor_borda = item.get("cor_borda")
+        texture_key = item.get("chave_textura")
+        show_border = item.get("mostrar_borda", True)
     else:
         pontos, cor_fill, cor_borda = item
         texture_key = None
@@ -59,7 +59,7 @@ def _carregar_background(path_str):
 
 
 def desenhar_background_da_sala(surface, room_data, camera, viewport):
-    background_path = room_data.get("background_texture")
+    background_path = room_data.get("textura_fundo")
     if not background_path:
         return False
 
@@ -71,7 +71,7 @@ def desenhar_background_da_sala(surface, room_data, camera, viewport):
 
     # Define em que area do mundo esse PNG representa.
     # Para salas maiores (ex.: corredor horizontal), isso permite pan com a camera.
-    bg_bounds = room_data.get("background_bounds", camera)
+    bg_bounds = room_data.get("limites_fundo", camera)
     bx0, by0, bx1, by1 = bg_bounds
     bw = max(1.0, float(bx1 - bx0))
     bh = max(1.0, float(by1 - by0))
@@ -107,7 +107,7 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     Renderiza background com tiling: extrai um pedaço da textura e repete horizontalmente.
     Usa clipping para garantir que só a viewport visível seja renderizada.
     """
-    background_path = room_data.get("background_texture")
+    background_path = room_data.get("textura_fundo")
     if not background_path:
         return False
 
@@ -118,7 +118,7 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     tex_h = background.get_height()
 
     # Define em que area do mundo esse PNG representa
-    bg_bounds = room_data.get("background_bounds", camera)
+    bg_bounds = room_data.get("limites_fundo", camera)
     bx0, by0, bx1, by1 = bg_bounds
     bw = max(1.0, float(bx1 - bx0))
     bh = max(1.0, float(by1 - by0))
@@ -127,18 +127,18 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     cam_w = max(1.0, float(cx1 - cx0))
 
     # Tamanho do tile em unidades de mundo
-    tile_world_w = room_data.get("tile_world_width", bw / 8)
-    tile_world_w = max(1, tile_world_w)
+    tile_mundo_w = room_data.get("largura_tile_mundo", bw / 8)
+    tile_mundo_w = max(1, tile_mundo_w)
     
     # Extrai tile uma única vez
-    tile_cache_key = (background_path, tile_world_w)
+    tile_cache_key = (background_path, tile_mundo_w)
     if tile_cache_key not in _tile_cache:
-        # Calcula quantos pixels do PNG correspondem ao tile_world_w
-        tile_tex_w = int(tile_world_w / bw * tex_w)
+        # Calcula quantos pixels do PNG correspondem ao tile_mundo_w
+        tile_tex_w = int(tile_mundo_w / bw * tex_w)
         tile_tex_w = max(1, min(tex_w, tile_tex_w))
         
         # Escala da imagem: 1.0 = tamanho natural, >1 = zoom in
-        bg_scale = room_data.get("background_scale", 1.0)
+        bg_scale = room_data.get("escala_fundo", 1.0)
         # Escala base: altura do PNG cabe no viewport
         escala_base = out_h / max(1, tex_h)
         escala_final = escala_base * bg_scale
@@ -158,7 +158,7 @@ def desenhar_background_com_tiling(surface, room_data, camera, viewport):
     tile_w = tile_surf.get_width()
     
     # Calcula offset do tile baseado na posição da câmera
-    pos_em_tiles = (cx0 - bx0) / tile_world_w
+    pos_em_tiles = (cx0 - bx0) / tile_mundo_w
     tile_index = int(pos_em_tiles)
     offset_na_tile = (pos_em_tiles - tile_index) * tile_w
     
@@ -189,26 +189,26 @@ def desenhar_foreground(surface, room_data, camera, viewport, textures, debug_cl
     old_clip = surface.get_clip()
     surface.set_clip(viewport_rect)
 
-    for item in room_data.get("foreground", []):
+    for item in room_data.get("primeiro_plano", []):
         if isinstance(item, dict) and draw_above_player is not None:
-            if item.get("draw_above_player", True) != draw_above_player:
+            if item.get("acima_do_jogador", True) != draw_above_player:
                 continue
-        if isinstance(item, dict) and ("image_path" in item or "surface" in item):
-            wx, wy, ww, wh = item["rect"]
-            if "image_path" in item:
-                img_path = item["image_path"]
+        if isinstance(item, dict) and ("caminho_imagem" in item or "superficie" in item):
+            wx, wy, ww, wh = item["retangulo"]
+            if "caminho_imagem" in item:
+                img_path = item["caminho_imagem"]
                 if img_path not in _foreground_image_cache:
                     _foreground_image_cache[img_path] = pygame.image.load(img_path).convert_alpha()
                 raw = _foreground_image_cache[img_path]
                 source_key = img_path
             else:
-                raw = item["surface"]
-                source_key = ("surface", id(raw))
-            sx1, sy1 = world_to_viewport(wx, wy, camera, viewport)
-            sx2, sy2 = world_to_viewport(wx + ww, wy + wh, camera, viewport)
+                raw = item["superficie"]
+                source_key = ("superficie", id(raw))
+            sx1, sy1 = mundo_para_viewport(wx, wy, camera, viewport)
+            sx2, sy2 = mundo_para_viewport(wx + ww, wy + wh, camera, viewport)
             sw, sh = max(1, sx2 - sx1), max(1, sy2 - sy1)
 
-            if item.get("preserve_aspect", True):
+            if item.get("manter_proporcao", True):
                 raw_w, raw_h = raw.get_size()
                 escala = min(sw / max(1, raw_w), sh / max(1, raw_h))
                 tw = max(1, int(raw_w * escala))

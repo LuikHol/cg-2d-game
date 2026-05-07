@@ -1,9 +1,8 @@
 import pygame
 
-from objects.components import ComponenteColisaoEstatica
-from objects.objeto_interagivel import ObjetoInterativo
-from render.collectible_sprites import get_collectible_sprite
-from world.salas.utils import poligono_de_chao, foreground_img, foreground_surface
+from objetos.componentes import ComponenteColisaoEstatica
+from objetos.objeto_interagivel import ObjetoInterativo
+from mundo.salas.utils import poligono_de_chao, foreground_img
 
 
 def criar_biblioteca():
@@ -19,20 +18,20 @@ def criar_biblioteca():
     porta_x_max = 540
     porta_y_topo = sala_y_min
 
-    livro_pickup = [(318, 640), (358, 640), (358, 700), (318, 700)]
+    livro_coletar = [(318, 640), (358, 640), (358, 700), (318, 700)]
     livro_coala = [(198, 348), (238, 348), (238, 388), (198, 388)]
 
     inter_livro_laranja = ObjetoInterativo(
         "livro_laranja",
-        livro_pickup,
+        livro_coletar,
         None,
         None,
         {
-            "type": "pickup",
+            "tipo": "coletar",
             "item": "livro_laranja",
             "mensagem": "Voce pegou o Livro Laranja!",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
 
     inter_livro_coala = ObjetoInterativo(
@@ -41,19 +40,19 @@ def criar_biblioteca():
         (120, 80, 40),
         (160, 110, 55),
         {
-            "type": "paper",
-            "title": "",
-            "lines": [],
-            "texture_path": "texturas/documentos/livro_coala.png",
+            "tipo": "documento",
+            "titulo": "",
+            "linhas": [],
+            "caminho_textura": "texturas/documentos/livro_coala.png",
         },
-        show_border=False,
+        mostrar_borda=False,
     )
 
     return {
         "nome": "biblioteca",
-        "background_texture": "texturas/cenario/biblioteca/biblioteca.png",
-        "background_zoom": 1.0,
-        "viewport_margin": 50,
+        "textura_fundo": "texturas/cenario/biblioteca/biblioteca.png",
+        "zoom_fundo": 1.0,
+        "margem_viewport": 50,
         "poligonos": [
             poligono_de_chao(
                 [
@@ -67,16 +66,16 @@ def criar_biblioteca():
             ),
         ],
         "portas_visuais": [],
-        "interactables": [inter_livro_laranja, inter_livro_coala],
-        "foreground": [
+        "interagiveis": [inter_livro_laranja, inter_livro_coala],
+        "primeiro_plano": [
             foreground_img("texturas/objetos/estante_livros1.png", 575, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/estante_livros3.png", 755, 388, 189, 221, escala=1.19),
             foreground_img("texturas/objetos/coala.png", 301, 520, 81, 169, escala=2.7),
         ],
-        "lights": [
+        "luzes": [
             {"x": 344, "y": 598, "rx": 54, "ry": 42, "steps": 24},
         ],
-        "colliders": [
+        "colidores": [
             # Parede superior com vao da porta ao centro
             colisao_estatica(1, 8, 443, 225),
             colisao_estatica(561, 8, 443, 225),
@@ -103,14 +102,14 @@ def criar_biblioteca():
         ],
         "transicoes": [
             {
-                "trigger": pygame.Rect(
+                "gatilho": pygame.Rect(
                     porta_x_min,
                     porta_y_topo,
                     porta_x_max - porta_x_min,
                     30,
                 ),
-                "target": "corredor",
-                "spawn": (169, 580),
+                "destino": "corredor",
+                "posicao_spawn": (169, 580),
             }
         ],
     }

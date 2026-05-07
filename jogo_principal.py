@@ -1,7 +1,7 @@
 ﻿import pygame
 import sys
 from efeitos_sonoros import tocar_efeito_se_existir
-from configs.game_config import (
+from configs.config_jogo import (
     ALTURA_MUNDO,
     ALTURA_TELA,
     CAMINHO_TEXTURA,
@@ -17,26 +17,26 @@ from configs.game_config import (
     VOLUME_MUSICA,
 )
 
-from objects.player_object import ObjetoJogador
-from objects.interaction_manager import GerenciadorInteracao
-from objects.room_manager import RoomManager
-from objects.perseguidora_object import ObjetoPerseguidora
-from world.rooms import construir_salas
-from objects.decoracoes import desenhar_coroa_estatua, desenhar_itens_tapete, desenhar_livro_coala, desenhar_pote_urso
-from render.sala_renderer import desenhar_sala, desenhar_foreground, desenhar_background_com_tiling, desenhar_item
+from objetos.objeto_jogador import ObjetoJogador
+from objetos.gerenciador_interacao import GerenciadorInteracao
+from objetos.gerenciador_sala import RoomManager
+from objetos.objeto_perseguidora import ObjetoPerseguidora
+from mundo.construtor_salas import construir_salas
+from objetos.decoracoes import desenhar_coroa_estatua, desenhar_itens_tapete, desenhar_livro_coala, desenhar_pote_urso
+from render.renderizador_sala import desenhar_sala, desenhar_foreground, desenhar_background_com_tiling, desenhar_item
 from render.iluminacao import desenhar_iluminacao
 from render.viewport import transformar_pontos, atualizar_camera_player_follow
 from render.poligono import desenhar_poligono
-from objects.inventario import Inventario
+from objetos.inventario import Inventario
 from musica_loop import iniciar_musica_loop, trocar_musica_se_existir, parar_musica
-from menu.inventory_hud import InventarioHUD
+from menu.hud_inventario import InventarioHUD
 
 class TestGameApp:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
+        self.tela = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
         pygame.display.set_caption(TITULO_JANELA)
-        self.clock = pygame.time.Clock()
+        self.relogio = pygame.time.Clock()
 
         try:
             self.textura = pygame.image.load(CAMINHO_TEXTURA)
@@ -62,33 +62,33 @@ class TestGameApp:
         self.ultima_posicao_player_sala2 = (float(self.player.x), float(self.player.y))
 
         self.camera = (0, 0, LARGURA_MUNDO, ALTURA_MUNDO)
-        self.default_viewport_margin = MARGEM_VIEWPORT
+        self.margem_viewport_padrao = MARGEM_VIEWPORT
         self.viewport = (0, 0, LARGURA_TELA, ALTURA_TELA)
-        self.textures = {"paper": self.textura}
+        self.texturas = {"paper": self.textura}
 
         self.fonte = pygame.font.SysFont(None, TAMANHO_FONTE_HUD)
         self.inventario_hud = InventarioHUD(self.fonte)
 
         self.dt = 0.0
-        self.running = True
-        self.last_input_dir = "right"
+        self.rodando = True
+        self.last_input_dir = "direita"
         # Debug rapido de colisao (medidor de retangulo em coordenadas de mundo).
         self.debug_colisao = False
         self.pick_inicio = None
         self.ultimo_snippet = ""
         self.last_room_for_music = self.room_manager.current_room
-        self.atualizar_viewport_por_sala(self.room_manager.get_room())
+        self.atualizar_viewport_por_sala(self.room_manager.obter_sala())
 
         # Sala 2 começa trancada até o puzzle do tapete ser resolvido.
-        self.room_manager.lock_room("sala_2")
+        self.room_manager.trancar_sala("sala_2")
         self._sala2_desbloqueada = False
 
     def atualizar_viewport_por_sala(self, dados_room):
-        if dados_room.get("viewport_fullscreen", False):
+        if dados_room.get("tela_cheia", False):
             self.viewport = (0, 0, LARGURA_TELA, ALTURA_TELA)
             return
 
-        margem = int(dados_room.get("viewport_margin", self.default_viewport_margin))
+        margem = int(dados_room.get("margem_viewport", self.margem_viewport_padrao))
         margem_max = max(0, (min(LARGURA_TELA, ALTURA_TELA) // 2) - 1)
         margem = max(0, min(margem, margem_max))
         self.viewport = (
@@ -125,17 +125,17 @@ class TestGameApp:
         elif right and not left:
             dx = 1
         elif left and right:
-            dx = -1 if self.last_input_dir == "left" else (1 if self.last_input_dir == "right" else 0)
+            dx = -1 if self.last_input_dir == "esquerda" else (1 if self.last_input_dir == "direita" else 0)
 
         if up and not down:
             dy = -1
         elif down and not up:
             dy = 1
         elif up and down:
-            dy = -1 if self.last_input_dir == "up" else (1 if self.last_input_dir == "down" else 0)
+            dy = -1 if self.last_input_dir == "cima" else (1 if self.last_input_dir == "baixo" else 0)
 
         if dx != 0 and dy != 0:
-            if self.last_input_dir in ("left", "right"):
+            if self.last_input_dir in ("esquerda", "direita"):
                 dy = 0
             else:
                 dx = 0
@@ -145,10 +145,10 @@ class TestGameApp:
     def _spawn_perseguidora_atras_do_player(self, dados_room):
         """Cria a perseguidora atras do jogador."""
         direcoes = {
-            "left": (-1.0, 0.0),
-            "right": (1.0, 0.0),
-            "up": (0.0, -1.0),
-            "down": (0.0, 1.0),
+            "esquerda": (-1.0, 0.0),
+            "direita": (1.0, 0.0),
+            "cima": (0.0, -1.0),
+            "baixo": (0.0, 1.0),
         }
         frente = direcoes.get(self.player.direcao, (1.0, 0.0))
         atras = (-frente[0], -frente[1])
@@ -171,12 +171,12 @@ class TestGameApp:
                 int(round(tamanho_colisor)),
                 int(round(tamanho_colisor)),
             )
-            if not any(candidato.colliderect(col.get_rect()) for col in dados_room.get("colliders", [])):
+            if not any(candidato.colliderect(col.get_rect()) for col in dados_room.get("colidores", [])):
                 spawn_x = candidato_x
                 spawn_y = candidato_y
                 break
 
-        bounds = dados_room.get("camera_bounds", (0, 0, LARGURA_MUNDO, ALTURA_MUNDO))
+        bounds = dados_room.get("limites_camera", (0, 0, LARGURA_MUNDO, ALTURA_MUNDO))
         bx0, by0, bx1, by1 = bounds
         spawn_x = max(float(bx0 + 24), min(float(spawn_x), float(bx1 - 24)))
         spawn_y = max(float(by0 + 24), min(float(spawn_y), float(by1 - 24)))
@@ -192,69 +192,75 @@ class TestGameApp:
             True,
             (200, 200, 200),
         )
-        self.screen.blit(texto, (10, 10))
+        self.tela.blit(texto, (10, 10))
 
         itens = self.inventario.listar()
         if itens:
-            largura_tela = self.screen.get_width()
+            largura_tela = self.tela.get_width()
             texto_inv = self.fonte.render(f"Inventario: {', '.join(itens)}", True, (255, 220, 80))
-            self.screen.blit(texto_inv, (largura_tela - texto_inv.get_width() - 10, 10))
+            self.tela.blit(texto_inv, (largura_tela - texto_inv.get_width() - 10, 10))
 
         if self.perseguidora_ativa and self.room_manager.current_room == "sala_2":
             texto_alerta = "FUJA! A perseguidora esta te seguindo."
             if self.alerta_perseguicao_tempo > 0.0:
                 texto_alerta = "PERIGO! Ela apareceu atras de voce!"
             alerta = self.fonte.render(texto_alerta, True, (255, 92, 92))
-            self.screen.blit(alerta, (10, 34))
+            self.tela.blit(alerta, (10, 34))
         elif self.perseguidora_agendada and self.room_manager.current_room == "sala_2":
             restante = max(0.0, self.tempo_para_spawn_perseguidora - self.tempo_andando_sala2)
             texto_alerta = f"Sinto algo se aproximando... continue correndo ({restante:.1f}s)"
             alerta = self.fonte.render(texto_alerta, True, (255, 190, 110))
-            self.screen.blit(alerta, (10, 34))
+            self.tela.blit(alerta, (10, 34))
 
         if self.debug_colisao:
-            mouse_world = self.tela_para_mundo(pygame.mouse.get_pos())
-            pos_text = f"mouse mundo: ({mouse_world[0]}, {mouse_world[1]})" if mouse_world else "mouse mundo: fora da viewport"
+            mouse_mundo = self.tela_para_mundo(pygame.mouse.get_pos())
+            pos_text = f"mouse mundo: ({mouse_mundo[0]}, {mouse_mundo[1]})" if mouse_mundo else "mouse mundo: fora da viewport"
             linha = self.fonte.render(
                 f"G: medidor on | clique 2 pontos | C: limpar | {pos_text}",
                 True,
                 (255, 235, 120),
             )
-            self.screen.blit(linha, (10, 58))
+            self.tela.blit(linha, (10, 58))
 
             if self.ultimo_snippet:
-                self.screen.blit(
+                self.tela.blit(
                     self.fonte.render(f"ultimo collider: {self.ultimo_snippet}", True, (160, 255, 180)),
                     (10, 82),
                 )
 
-            if self.pick_inicio is not None and mouse_world is not None:
+            if self.pick_inicio is not None and mouse_mundo is not None:
                 x0, y0 = self.pick_inicio
-                x1, y1 = mouse_world
+                x1, y1 = mouse_mundo
                 preview = [
                     (min(x0, x1), min(y0, y1)),
                     (max(x0, x1), min(y0, y1)),
                     (max(x0, x1), max(y0, y1)),
                     (min(x0, x1), max(y0, y1)),
                 ]
-                desenhar_poligono(self.screen, transformar_pontos(preview, self.camera, self.viewport), (255, 255, 0))
+                desenhar_poligono(self.tela, transformar_pontos(preview, self.camera, self.viewport), (255, 255, 0))
 
     def processar_eventos(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.running = False
+                self.rodando = False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    self.running = False
+                    self.rodando = False
                 elif event.key in (pygame.K_a, pygame.K_LEFT):
-                    self.last_input_dir = "left"
+                    self.last_input_dir = "esquerda"
                 elif event.key in (pygame.K_d, pygame.K_RIGHT):
-                    self.last_input_dir = "right"
+                    self.last_input_dir = "direita"
                 elif event.key in (pygame.K_w, pygame.K_UP):
-                    self.last_input_dir = "up"
+                    if self.inventario_hud.aberto:
+                        self.inventario_hud.mover_selecao(-1, self.inventario)
+                    else:
+                        self.last_input_dir = "cima"
                 elif event.key in (pygame.K_s, pygame.K_DOWN):
-                    self.last_input_dir = "down"
+                    if self.inventario_hud.aberto:
+                        self.inventario_hud.mover_selecao(1, self.inventario)
+                    else:
+                        self.last_input_dir = "baixo"
                 elif event.key == pygame.K_g:
                     self.debug_colisao = not self.debug_colisao
                     if not self.debug_colisao:
@@ -264,21 +270,17 @@ class TestGameApp:
                     self.ultimo_snippet = ""
                 elif event.key == pygame.K_r:
                     self.inventario_hud.alternar()
-                elif event.key == pygame.K_w and self.inventario_hud.aberto:
-                    self.inventario_hud.mover_selecao(-1, self.inventario)
-                elif event.key == pygame.K_s and self.inventario_hud.aberto:
-                    self.inventario_hud.mover_selecao(1, self.inventario)
 
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.debug_colisao:
-                mouse_world = self.tela_para_mundo(event.pos)
-                if mouse_world is None:
+                mouse_mundo = self.tela_para_mundo(event.pos)
+                if mouse_mundo is None:
                     continue
 
                 if self.pick_inicio is None:
-                    self.pick_inicio = mouse_world
+                    self.pick_inicio = mouse_mundo
                 else:
                     x0, y0 = self.pick_inicio
-                    x1, y1 = mouse_world
+                    x1, y1 = mouse_mundo
                     rx, ry = min(x0, x1), min(y0, y1)
                     rw, rh = abs(x1 - x0), abs(y1 - y0)
                     self.ultimo_snippet = f"sc({rx}, {ry}, {rw}, {rh}),"
@@ -290,71 +292,71 @@ class TestGameApp:
         dx, dy = self.processar_input(keys)
 
         # Atualiza item em mao baseado na selecao do HUD.
-        self.gerenciador_interacao.item_em_mao = self.inventario_hud.get_item_selecionado(self.inventario)
+        self.gerenciador_interacao.item_em_mao = self.inventario_hud.obter_item_selecionado(self.inventario)
 
-        dados_room = self.room_manager.get_room()
+        dados_room = self.room_manager.obter_sala()
         
-        if self.gerenciador_interacao.papel_aberto:
+        if self.gerenciador_interacao.papel_aberto or self.inventario_hud.aberto:
             dx, dy = 0, 0
-        self.player.mover(dx, dy, self.dt, dados_room["colliders"])
-        transicao = self.room_manager.update(self.player, self.dt)
+        self.player.mover(dx, dy, self.dt, dados_room["colidores"])
+        transicao = self.room_manager.atualizar(self.player, self.dt)
 
         # Verifica se puzzle foi resolvido e desbloqueia sala 2.
         if not self._sala2_desbloqueada:
-            from objects import puzzle_state
-            if puzzle_state.tapete_resolvido():
+            from objetos import estado_puzzle
+            if estado_puzzle.tapete_resolvido():
                 tocar_efeito_se_existir("puzzle_resolvido.mp3")
                 self.gerenciador_interacao.mensagem_mundo = "Uma porta foi destrancada."
                 self.gerenciador_interacao.pos_mensagem_mundo = (int(self.player.x), int(self.player.y) - 40)
                 self.gerenciador_interacao.tempo_mensagem_mundo = 3.0
-                self.room_manager.unlock_room("sala_2")
+                self.room_manager.destrancar_sala("sala_2")
                 self._sala2_desbloqueada = True
                 # Remove o collider de porta do corredor.
                 corredor = self.room_manager.rooms.get("corredor")
                 if corredor:
-                    corredor["colliders"] = [
-                        c for c in corredor["colliders"]
+                    corredor["colidores"] = [
+                        c for c in corredor["colidores"]
                         if not (c.rect.x == 1588 and c.rect.y == 350 and c.rect.width == 12 and c.rect.height == 80)
                     ]
 
         # Porta bloqueada: avisa quando o jogador toca o collider da porta sala_2.
         if not self._sala2_desbloqueada and self.room_manager.current_room == "corredor":
             porta_rect = pygame.Rect(1588, 350, 12, 80)
-            player_rect = self.player.collider.get_rect_from_center(self.player.x, self.player.y)
+            player_rect = self.player.collider.obter_rect_do_centro(self.player.x, self.player.y)
             expanded = porta_rect.inflate(16, 16)
             if player_rect.colliderect(expanded) and self.gerenciador_interacao.tempo_mensagem_mundo <= 0:
                 self.gerenciador_interacao.mensagem_mundo = "A porta esta trancada."
                 self.gerenciador_interacao.pos_mensagem_mundo = (int(self.player.x), int(self.player.y) - 40)
                 self.gerenciador_interacao.tempo_mensagem_mundo = 2.0
 
-        if transicao is not None and transicao.get("blocked"):
+        if transicao is not None and transicao.get("bloqueado"):
             transicao = None
 
         if transicao is not None:
-            if transicao["target"] == "sala_2":
+            if transicao["destino"] == "sala_2":
                 self.perseguidora = None
                 self.perseguidora_ativa = False
                 self.perseguidora_agendada = True
                 self.tempo_andando_sala2 = 0.0
                 self.ultima_posicao_player_sala2 = (float(self.player.x), float(self.player.y))
-            elif transicao["source"] == "sala_2":
+            elif transicao["origem"] == "sala_2":
                 self.perseguidora = None
                 self.perseguidora_ativa = False
                 self.perseguidora_agendada = False
                 self.tempo_andando_sala2 = 0.0
 
         # Camera segue somente salas que definem bounds (ex.: corredor horizontal).
-        dados_room = self.room_manager.get_room()
+        dados_room = self.room_manager.obter_sala()
         self.atualizar_viewport_por_sala(dados_room)
-        camera_bounds = dados_room.get("camera_bounds")
+        camera_bounds = dados_room.get("limites_camera")
         if camera_bounds:
             self.camera = atualizar_camera_player_follow(
                 self.player.x,
                 self.player.y,
                 camera_bounds,
                 (
-                    dados_room.get("camera_viewport_width", LARGURA_MUNDO),
-                    dados_room.get("camera_viewport_height", ALTURA_MUNDO),
+                    dados_room.get("largura_camera", LARGURA_MUNDO),
+                    dados_room.get("altura_camera", ALTURA_MUNDO),
                 ),
             )
         else:
@@ -372,7 +374,7 @@ class TestGameApp:
                 )
             self.last_room_for_music = current_room
 
-        dados_room = self.room_manager.get_room()
+        dados_room = self.room_manager.obter_sala()
         if self.room_manager.current_room == "sala_2" and not self.perseguidora_ativa and not self.perseguidora_agendada:
             # Fallback para casos em que o jogador inicia/retorna na sala_2 sem evento de transicao.
             self.perseguidora_agendada = True
@@ -393,10 +395,10 @@ class TestGameApp:
                 self._spawn_perseguidora_atras_do_player(dados_room)
 
         if self.perseguidora_ativa and self.perseguidora is not None and self.room_manager.current_room == "sala_2":
-            self.perseguidora.atualizar(self.player.x, self.player.y, self.dt, dados_room["colliders"])
+            self.perseguidora.atualizar(self.player.x, self.player.y, self.dt, dados_room["colidores"])
 
-            player_rect = self.player.collider.get_rect_from_center(self.player.x, self.player.y)
-            perseguidora_rect = self.perseguidora.collider.get_rect_from_center(self.perseguidora.x, self.perseguidora.y)
+            player_rect = self.player.collider.obter_rect_do_centro(self.player.x, self.player.y)
+            perseguidora_rect = self.perseguidora.collider.obter_rect_do_centro(self.perseguidora.x, self.perseguidora.y)
             if player_rect.colliderect(perseguidora_rect):
                 # Reposiciona a perseguidora para manter a pressao sem travar o player.
                 self._spawn_perseguidora_atras_do_player(dados_room)
@@ -404,78 +406,78 @@ class TestGameApp:
         if self.alerta_perseguicao_tempo > 0.0:
             self.alerta_perseguicao_tempo = max(0.0, self.alerta_perseguicao_tempo - self.dt)
 
-        player_rect = self.player.collider.get_rect_from_center(self.player.x, self.player.y)
+        player_rect = self.player.collider.obter_rect_do_centro(self.player.x, self.player.y)
         self.gerenciador_interacao.atualizar(
             keys,
             player_rect,
-            dados_room.get("interactables", []),
+            dados_room.get("interagiveis", []),
             self.dt,
         )
 
     def renderizar(self):
-        self.screen.fill((10, 10, 10))
-        dados_room = self.room_manager.get_room()
+        self.tela.fill((10, 10, 10))
+        dados_room = self.room_manager.obter_sala()
 
         # Corredor usa tiling + poligonos de parede.
         if dados_room.get("nome") in ("corredor", "sala_2"):
-            desenhar_background_com_tiling(self.screen, dados_room, self.camera, self.viewport)
+            desenhar_background_com_tiling(self.tela, dados_room, self.camera, self.viewport)
             for item in dados_room["poligonos"]:
-                desenhar_item(self.screen, item, self.camera, self.viewport, self.textures, False)
+                desenhar_item(self.tela, item, self.camera, self.viewport, self.texturas, False)
             for item in dados_room["portas_visuais"]:
-                desenhar_item(self.screen, item, self.camera, self.viewport, self.textures, False)
+                desenhar_item(self.tela, item, self.camera, self.viewport, self.texturas, False)
         else:
-            desenhar_sala(self.screen, dados_room, self.camera, self.viewport, self.textures, False)
+            desenhar_sala(self.tela, dados_room, self.camera, self.viewport, self.texturas, False)
 
         desenhar_foreground(
-            self.screen,
+            self.tela,
             dados_room,
             self.camera,
             self.viewport,
-            self.textures,
+            self.texturas,
             False,
             draw_above_player=False,
         )
 
         if self.perseguidora_ativa and self.perseguidora is not None and self.room_manager.current_room == "sala_2":
-            self.perseguidora.draw(self.screen, self.camera, self.viewport)
+            self.perseguidora.desenhar(self.tela, self.camera, self.viewport)
 
-        self.player.draw(self.screen, self.camera, self.viewport, self.textura)
+        self.player.desenhar(self.tela, self.camera, self.viewport, self.textura)
         desenhar_foreground(
-            self.screen,
+            self.tela,
             dados_room,
             self.camera,
             self.viewport,
-            self.textures,
+            self.texturas,
             False,
             draw_above_player=True,
         )
-        desenhar_iluminacao(self.screen, self.player, dados_room, self.camera, self.viewport)
+        desenhar_iluminacao(self.tela, self.player, dados_room, self.camera, self.viewport)
 
         if self.room_manager.current_room == "corredor":
-            desenhar_pote_urso(self.screen, self.camera, self.viewport, self.inventario)
+            desenhar_pote_urso(self.tela, self.camera, self.viewport, self.inventario)
 
         if self.room_manager.current_room == "sala_1":
-            desenhar_coroa_estatua(self.screen, self.camera, self.viewport, self.inventario)
+            desenhar_coroa_estatua(self.tela, self.camera, self.viewport, self.inventario)
 
         if self.room_manager.current_room == "biblioteca":
-            desenhar_livro_coala(self.screen, self.camera, self.viewport, self.inventario)
+            desenhar_livro_coala(self.tela, self.camera, self.viewport, self.inventario)
 
         if self.room_manager.current_room == "quarto_rainha":
-            desenhar_itens_tapete(self.screen, self.camera, self.viewport)
+            desenhar_itens_tapete(self.tela, self.camera, self.viewport)
 
-        self.gerenciador_interacao.desenhar(self.screen, self.camera, self.viewport)
+        self.gerenciador_interacao.desenhar(self.tela, self.camera, self.viewport)
         self.desenhar_hud()
-        self.inventario_hud.desenhar_hint(self.screen, self.viewport)
-        self.inventario_hud.desenhar(self.screen, self.inventario, self.viewport)
+        self.inventario_hud.desenhar_hint(self.tela, self.viewport)
+        self.inventario_hud.desenhar(self.tela, self.inventario, self.viewport)
 
         pygame.display.flip()
 
     def run(self):
-        while self.running:
+        while self.rodando:
             self.processar_eventos()
             self.atualizar_logica()
             self.renderizar()
-            self.dt = self.clock.tick(60) / 1000.0
+            self.dt = self.relogio.tick(60) / 1000.0
 
         parar_musica()
         pygame.quit()
