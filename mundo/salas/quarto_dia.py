@@ -100,7 +100,7 @@ def criar_quarto_dia():
         ],
         "primeiro_plano": [
             foreground_img("texturas/objetos/abajour.png", 287, 680, 46, 130, escala=6),
-            foreground_img("texturas/objetos/poltrona.png", 158, 450, 167, 197, escala=1.80),
+            foreground_img("texturas/objetos/poltrona_dia.png", 158, 450, 167, 197, escala=1.80),
             foreground_img("texturas/objetos/colcha_cama.png", 700, 273, 104, 82, escala=1),
         ],
         "luzes": [
