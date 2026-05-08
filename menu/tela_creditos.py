@@ -4,10 +4,10 @@ from configs.config_menu import COR_TITULO, COR_BOTAO_BORDA
 
 
 def tela_creditos(tela, relogio, tempo_total=10.0):
-    """
-    Renderiza a tela de créditos e retorna True quando termina.
-    tempo_total: duração da tela de créditos em segundos.
-    """
+
+    # Renderiza a tela de créditos e retorna True quando termina.
+    # tempo_total: duração da tela de créditos em segundos.
+
     tempo_decorrido = 0.0
     fonte_grande = pygame.font.SysFont(None, 48)
     fonte_normal = pygame.font.SysFont(None, 32)
