@@ -1,0 +1,114 @@
+import pygame
+
+from objetos.componentes import ComponenteColisaoEstatica
+from objetos.objeto_interagivel import ObjetoInterativo
+
+def criar_quarto_rainha():
+    colisao_estatica = ComponenteColisaoEstatica
+    # Porta para o corredor fica na lateral direita do quarto.
+    porta_corredor = pygame.Rect(982, 376, 15, 117)
+
+    bilhete_puzzle = [(737, 448), (767, 448), (767, 495), (737, 495)]
+    diario_rainha = [(46, 549), (82, 549), (82, 585), (46, 585)]
+
+    inter_bilhete = ObjetoInterativo(
+        "bilhete_puzzle",
+        bilhete_puzzle,
+        (185, 175, 120),
+        (225, 210, 140),
+        {
+            "tipo": "mensagem",
+            "texto": "Do calor da realeza, ao dourado da docura, os três guardiões carregam a chave da abertura",
+            "duracao": 5,
+        },
+    )
+
+    inter_diario_rainha = ObjetoInterativo(
+        "diário_rainha",
+        diario_rainha,
+        (120, 80, 40),
+        (160, 110, 55),
+        {
+            "tipo": "documento",
+            "titulo": "",
+            "linhas": [],
+            "caminho_textura": "texturas/documentos/diario_rainha.png",
+        },
+        chave_textura="paper",
+        mostrar_borda=True,
+    )
+
+    # Três círculos do tapete – ordem horária: topo=livro, direita=pote, esquerda=coroa.
+    circulo_coroa = [(272, 474), (307, 474), (307, 509), (272, 509)]
+    circulo_livro  = [(449, 314), (484, 314), (484, 349), (449, 349)]
+    circulo_pote   = [(621, 474), (656, 474), (656, 509), (621, 509)]
+
+    inter_coroa_tapete = ObjetoInterativo(
+        "circulo do tapete", circulo_coroa, None, None,
+        {
+            "tipo": "depositar",
+            "slot": 0,
+            "mensagem_ok": "Item depositado no tapete!",
+        },
+        mostrar_borda=False,
+    )
+    inter_livro_tapete = ObjetoInterativo(
+        "circulo do tapete", circulo_livro, None, None,
+        {
+            "tipo": "depositar",
+            "slot": 1,
+            "mensagem_ok": "Item depositado no tapete!",
+        },
+        mostrar_borda=False,
+    )
+    inter_pote_tapete = ObjetoInterativo(
+        "circulo do tapete", circulo_pote, None, None,
+        {
+            "tipo": "depositar",
+            "slot": 2,
+            "mensagem_ok": "Item depositado no tapete!",
+        },
+        mostrar_borda=False,
+    )
+
+    return {
+        "nome": "quarto_rainha",
+        "textura_fundo": "texturas/cenario/quarto_rainha/quartorainha.png",
+        "zoom_fundo": 1.0,
+        "margem_viewport": 50,
+        "poligonos": [
+            inter_diario_rainha.como_item_desenhavel()
+        ],
+        "portas_visuais": [],
+        "interagiveis": [inter_bilhete, inter_coroa_tapete, inter_livro_tapete, inter_pote_tapete, inter_diario_rainha],
+        "primeiro_plano": [
+        ],
+        "luzes": [
+            {"x": 290, "y": 492, "rx": 52, "ry": 56, "steps": 24},
+            {"x": 467, "y": 332, "rx": 56, "ry": 50, "steps": 24},
+            {"x": 639, "y": 492, "rx": 54, "ry": 51, "steps": 24},
+        ],
+        "colisores": [
+            # 
+            colisao_estatica(1, 0, 17, 747),
+            colisao_estatica(4, 735, 988, 13),
+            colisao_estatica(992, 487, 8, 261),
+            colisao_estatica(988, 12, 2, 358),
+            colisao_estatica(985, 0, 13, 367),
+            colisao_estatica(8, 198, 987, 60),
+            colisao_estatica(721, 112, 190, 225),
+            colisao_estatica(258, 210, 63, 87),
+            colisao_estatica(748, 625, 64, 84),
+            colisao_estatica(98, 628, 72, 104),
+            colisao_estatica(20, 381, 187, 163),
+            colisao_estatica(900, 495, 94, 193),
+            colisao_estatica(881, 531, 53, 115),
+        ],
+        "transicoes": [
+            {
+                "gatilho": porta_corredor,
+                "destino": "corredor",
+                "posicao_spawn": (40, 390),
+            }
+        ],
+    }

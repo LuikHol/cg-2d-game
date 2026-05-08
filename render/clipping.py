@@ -1,55 +1,44 @@
-from configs.clipping_config import ABAIXO, ACIMA, DENTRO, DIREITA, ESQUERDA
-
+from configs.config_clipping import ABAIXO, ACIMA, DENTRO, DIREITA, ESQUERDA
 
 # Codigos de regiao usados para classificar onde um ponto esta em relacao a janela.
 # Cada constante representa um bit: pode-se combinar com | para indicar dois lados ao mesmo tempo.
 
-def compute_code(x, y, xmin, ymin, xmax, ymax):
-    # Começa assumindo que o ponto esta dentro.
+def computar_code(x, y, xmin, ymin, xmax, ymax):
     code = DENTRO
 
-    # Verifica o eixo horizontal.
     if x < xmin:
-        code |= ESQUERDA           # fora pela esquerda
+        code |= ESQUERDA # fora pela esquerda
     elif x > xmax:
-        code |= DIREITA          # fora pela direita
+        code |= DIREITA # fora pela direita
 
-    # Verifica o eixo vertical (y cresce para baixo na tela).
     if y < ymin:
-        code |= ACIMA            # acima da janela
+        code |= ACIMA # acima da janela
     elif y > ymax:
-        code |= ABAIXO         # abaixo da janela
+        code |= ABAIXO # abaixo da janela
 
     return code
 
 
 def cohen_sutherland(x1, y1, x2, y2, xmin, ymin, xmax, ymax):
-    # Calcula o codigo de regiao para cada ponta da linha.
-    code1 = compute_code(x1, y1, xmin, ymin, xmax, ymax)
-    code2 = compute_code(x2, y2, xmin, ymin, xmax, ymax)
+    code1 = computar_code(x1, y1, xmin, ymin, xmax, ymax)
+    code2 = computar_code(x2, y2, xmin, ymin, xmax, ymax)
 
     accept = False
 
     while True:
         if code1 == 0 and code2 == 0:
-            # Os dois pontos estao dentro: aceita a linha inteira.
             accept = True
             break
 
         elif (code1 & code2) != 0:
-            # Os dois pontos compartilham uma regiao externa: linha totalmente fora.
             break
 
         else:
-            # A linha cruza a janela: precisa ser cortada.
-
-            # Escolhe a ponta que esta fora para cortar primeiro.
             if code1 != 0:
                 code_out = code1
             else:
                 code_out = code2
 
-            # Calcula o ponto de intersecao com a borda correspondente.
             if code_out & ACIMA:
                 # Cruza a borda do topo: interpola x para y = ymin.
                 x = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1)
@@ -73,10 +62,10 @@ def cohen_sutherland(x1, y1, x2, y2, xmin, ymin, xmax, ymax):
             # Substitui a ponta que estava fora pelo novo ponto cortado.
             if code_out == code1:
                 x1, y1 = x, y
-                code1 = compute_code(x1, y1, xmin, ymin, xmax, ymax)
+                code1 = computar_code(x1, y1, xmin, ymin, xmax, ymax)
             else:
                 x2, y2 = x, y
-                code2 = compute_code(x2, y2, xmin, ymin, xmax, ymax)
+                code2 = computar_code(x2, y2, xmin, ymin, xmax, ymax)
 
     if accept:
         return int(x1), int(y1), int(x2), int(y2)
