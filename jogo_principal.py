@@ -364,6 +364,7 @@ class TestGameApp:
         self.gerenciador_interacao.item_em_mao = self.inventario_hud.obter_item_selecionado(self.inventario)
 
         dados_room = self.room_manager.obter_sala()
+        self.player.mostrar_coroa = self.room_manager.current_room != "quarto_dia"
         
         if self.gerenciador_interacao.papel_aberto or self.inventario_hud.aberto:
             dx, dy = 0, 0

@@ -20,7 +20,7 @@ def criar_quarto_dia():
     caixa_brinquedos = [(864, 180), (980, 180), (980, 239), (864, 239)]
     urso_pelucia = [(259, 67), (361, 67), (361, 305), (259, 305)]
     princesa = [(54, 500), (140, 500), (140, 650), (54, 650)]
-    livro= [(548,54), (548,140), (689,140), (689,64)]
+    livro = [(510, 219), (651, 219), (651, 305), (510, 305)]
 
     inter_caixa_brinquedos = ObjetoInterativo(
         "caixa de brinquedos",
@@ -57,6 +57,7 @@ def criar_quarto_dia():
             "tipo": "mensagem",
             "texto": "Como a Princesa veio parar aqui?",
             "duracao": 2.8,
+            "som": "ronronando.mp3",
         },
         mostrar_borda=False,
     )
@@ -68,8 +69,8 @@ def criar_quarto_dia():
         None,
         {
             "tipo": "mensagem",
-            "texto": "Um brinquedo esquecido bem no meio da sala.",
-            "duracao": 2.8,
+            "texto": "O livro que estou lendo... o Príncipe Dorminhoco.",
+            "duracao": 3.8,
         },
         mostrar_borda=False,
     )

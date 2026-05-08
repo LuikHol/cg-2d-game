@@ -408,13 +408,14 @@ class ObjetoJogador:
             screen.blit(quadro, rect)
 
             # Renderiza coroa pulsante acima da cabeca.
-            tamanho_pixel_coroa = max(2, int(quadro.get_height() * 0.05))
-            coroa = self._obter_superficie_coroa(tamanho_pixel_coroa)
-            oscilacao = int(pygame.time.get_ticks() / 220) % 2
-            retangulo_coroa = coroa.get_rect(
-                midbottom=(sx, rect.top + max(3, coroa.get_height() // 2) + oscilacao)
-            )
-            screen.blit(coroa, retangulo_coroa)
+            if getattr(self, "mostrar_coroa", True):
+                tamanho_pixel_coroa = max(2, int(quadro.get_height() * 0.05))
+                coroa = self._obter_superficie_coroa(tamanho_pixel_coroa)
+                oscilacao = int(pygame.time.get_ticks() / 220) % 2
+                retangulo_coroa = coroa.get_rect(
+                    midbottom=(sx, rect.top + max(3, coroa.get_height() // 2) + oscilacao)
+                )
+                screen.blit(coroa, retangulo_coroa)
             return
 
         # Fallback para o desenho poligonal anterior.

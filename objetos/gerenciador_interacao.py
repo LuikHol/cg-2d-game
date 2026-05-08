@@ -164,6 +164,9 @@ class GerenciadorInteracao:
             return
 
         # Fallback para mensagem comum acima do objeto.
+        som = acao.get("som")
+        if som:
+            tocar_efeito_se_existir(som)
         self.mensagem_mundo = acao.get("texto", "...")
         self.pos_mensagem_mundo = obj.obter_centro()
         self.tempo_mensagem_mundo = float(acao.get("duracao", 2.6))
