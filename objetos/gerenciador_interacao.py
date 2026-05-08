@@ -29,6 +29,9 @@ class GerenciadorInteracao:
         self.inventario = inventario
         self._texture_cache = {}
         self._pickups_coletados = set()
+        
+        # Cache de surfaces de estrelas por tamanho (evita criar a cada frame)
+        self._cache_estrelas = {}
 
         # Estado de mensagens e prompt
         self.alvo_prompt = None
@@ -210,8 +213,23 @@ class GerenciadorInteracao:
             estrela_rect = pygame.Rect(sx - tam // 2, sy - tam // 2, tam, tam)
             if not estrela_rect.colliderect(viewport_rect):
                 continue
-            surf_estrela = pygame.Surface((tam, tam), pygame.SRCALPHA)
-            self._desenhar_estrela(surf_estrela, tam // 2, tam // 2, raio, raio * 0.4, 4, cor)
+            
+            # Cache único de estrela - reutiliza sempre (tamanho fixo para melhor performance)
+            if "estrela_base" not in self._cache_estrelas:
+                tam_base = 14
+                surf_estrela = pygame.Surface((tam_base, tam_base), pygame.SRCALPHA)
+                raio_base = tam_base / 2.0
+                self._desenhar_estrela(surf_estrela, raio_base, raio_base, raio_base * 0.8, raio_base * 0.32, 4, (255, 255, 255, 255))
+                self._cache_estrelas["estrela_base"] = (surf_estrela, tam_base)
+            
+            surf_base, tam_base = self._cache_estrelas["estrela_base"]
+            
+            # Redimensiona para tamanho atual se diferir muito
+            if abs(tam - tam_base) > 2:
+                surf_estrela = escalar_superficie(surf_base, tam, tam)
+            else:
+                surf_estrela = surf_base
+            
             screen.blit(surf_estrela, (sx - tam // 2, sy - tam // 2))
 
         screen.set_clip(old_clip)

@@ -264,7 +264,8 @@ def menu_principal():
                         pygame.quit()
                         return "sair"
 
-        tela.fill(COR_FUNDO)
+        rect_bg = [(0, 0), (LARGURA, 0), (LARGURA, ALTURA), (0, ALTURA)]
+        scanline_fill(tela, rect_bg, COR_FUNDO)
 
         titulo = fonte_titulo.render(TITULO_MENU, True, COR_TITULO)
         tela.blit(titulo, titulo.get_rect(midleft=(88, 106)))

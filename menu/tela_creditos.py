@@ -1,6 +1,7 @@
 import pygame
 from configs.config_jogo import LARGURA_TELA, ALTURA_TELA
 from configs.config_menu import COR_TITULO, COR_BOTAO_BORDA
+from render.preenchimento import scanline_fill
 
 
 def tela_creditos(tela, relogio, tempo_total=10.0):
@@ -32,7 +33,8 @@ def tela_creditos(tela, relogio, tempo_total=10.0):
                 if evento.key in (pygame.K_ESCAPE, pygame.K_SPACE, pygame.K_RETURN):
                     return "menu"
         
-        tela.fill((10, 10, 10))
+        rect_bg = [(0, 0), (LARGURA_TELA, 0), (LARGURA_TELA, ALTURA_TELA), (0, ALTURA_TELA)]
+        scanline_fill(tela, rect_bg, (10, 10, 10))
         
         # Opacidade baseada no tempo (fade in/out)
         progresso = tempo_decorrido / tempo_total

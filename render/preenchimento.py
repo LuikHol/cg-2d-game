@@ -2,6 +2,33 @@ from render.pixel import setPixel
 from render.scanline_core import iter_scanline_spans
 
 
+# Cache de spans scanline - armazena resultado da rasterização geométrica
+class CacheScanlineSpans:
+    def __init__(self):
+        self.cache = {}
+    
+    def obter_chave(self, pontos):
+        """Cria chave de cache baseada apenas em geometria (pontos)."""
+        return tuple(pontos)
+    
+    def obter_spans_cacheados(self, pontos):
+        """Retorna spans cacheados se existirem."""
+        chave = self.obter_chave(pontos)
+        return self.cache.get(chave)
+    
+    def cachear_spans(self, pontos, spans):
+        """Armazena resultado de scanline em cache."""
+        chave = self.obter_chave(pontos)
+        self.cache[chave] = spans
+    
+    def limpar(self):
+        """Limpa todo o cache."""
+        self.cache.clear()
+
+# Instancia global do cache
+_cache_scanline = CacheScanlineSpans()
+
+
 def interpola_cor(c0, c1, t):
     """Interpola duas cores RGB(A) no fator t em [0, 1]."""
     t = max(0.0, min(1.0, float(t)))
@@ -9,10 +36,27 @@ def interpola_cor(c0, c1, t):
     return tuple(int(c0[i] + (c1[i] - c0[i]) * t) for i in range(n))
 
 
-def scanline_fill(surface, pontos, color):
-    for y, x_ini, x_fim, _y_min, _y_max in iter_scanline_spans(pontos):
+def preencher_scanline(superficie, pontos, cor):
+    """Preenche poligono - cache de spans rasterização geométrica."""
+    # Tenta recuperar spans do cache
+    spans_cacheados = _cache_scanline.obter_spans_cacheados(pontos)
+    
+    if spans_cacheados is None:
+        # Se não está em cache, calcula spans e armazena
+        spans = list(iter_scanline_spans(pontos))
+        _cache_scanline.cachear_spans(pontos, spans)
+    else:
+        # Usa spans cacheados
+        spans = spans_cacheados
+    
+    # Preenche pixels com spans (sempre via setPixel para compliance)
+    for y, x_ini, x_fim, _y_min, _y_max in spans:
         for x in range(x_ini, x_fim + 1):
-            setPixel(surface, x, y, color)
+            setPixel(superficie, x, y, cor)
+
+
+# Alias para compatibilidade
+scanline_fill = preencher_scanline
 
 
 def scanline_texture(surface, pontos, textura):
@@ -84,3 +128,8 @@ def scanline_fill_gradiente(surface, pontos, cores):
                 t = (x - x_ini) / (x_fim - x_ini)
                 cor = interpola_cor(cor_ini, cor_fim, t)
                 setPixel(surface, x, y, cor)
+
+
+def limpar_cache_scanline():
+    """Limpa cache de spans scanline - chamar ao trocar salas para economizar memória."""
+    _cache_scanline.limpar()

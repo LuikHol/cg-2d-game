@@ -49,7 +49,8 @@ def obter_ambient_base(vw, vh, ambient_alpha=None):
     if key in _ambient_cache:
         return _ambient_cache[key]
     base = pygame.Surface((vw, vh), pygame.SRCALPHA)
-    base.fill((0, 0, 0, alpha_base))
+    rect_bg = [(0, 0), (vw, 0), (vw, vh), (0, vh)]
+    scanline_fill(base, rect_bg, (0, 0, 0, alpha_base))
     _ambient_cache[key] = base
     return base
 

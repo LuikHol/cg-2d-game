@@ -28,6 +28,7 @@ from render.renderizador_sala import desenhar_sala, desenhar_foreground, desenha
 from render.iluminacao import desenhar_iluminacao
 from render.viewport import transformar_pontos, atualizar_camera_player_follow
 from render.poligono import desenhar_poligono
+from render.preenchimento import limpar_cache_scanline, scanline_fill
 from objetos.inventario import Inventario
 from musica_loop import iniciar_musica_loop, trocar_musica_se_existir, parar_musica
 from menu.hud_inventario import InventarioHUD
@@ -70,6 +71,9 @@ class TestGameApp:
 
         self.fonte = pygame.font.SysFont(None, TAMANHO_FONTE_HUD)
         self.inventario_hud = InventarioHUD(self.fonte)
+
+        # Superfície limpa cacheada para clear do render (criada uma vez, reutilizada)
+        self.superficie_limpa = pygame.Surface((LARGURA_TELA, ALTURA_TELA))
 
         self.dt = 0.0
         self.rodando = True
@@ -247,7 +251,8 @@ class TestGameApp:
                     self._reiniciar_antes_da_perseguicao()
                     return
 
-            self.tela.fill((8, 0, 0))
+            rect_bg = [(0, 0), (LARGURA_TELA, 0), (LARGURA_TELA, ALTURA_TELA), (0, ALTURA_TELA)]
+            scanline_fill(self.tela, rect_bg, (8, 0, 0))
             titulo = fonte_titulo.render("GAME OVER", True, (240, 70, 70))
             subtitulo = fonte_sub.render("Pressione qualquer botao para continuar", True, (235, 235, 235))
             self.tela.blit(titulo, (LARGURA_TELA // 2 - titulo.get_width() // 2, ALTURA_TELA // 2 - 80))
@@ -445,6 +450,7 @@ class TestGameApp:
                     fade_ms=500,
                 )
             self.last_room_for_music = current_room
+            limpar_cache_scanline()  # Limpa cache ao mudar de sala
 
         dados_room = self.room_manager.obter_sala()
         if self.room_manager.current_room == "sala_2" and not self.perseguidora_ativa and not self.perseguidora_agendada:
@@ -495,7 +501,9 @@ class TestGameApp:
         self.gerenciador_interacao.particulas.update(self.dt)
 
     def renderizar(self):
-        self.tela.fill((10, 10, 10))
+        # Limpa a tela usando Surface cacheada (composição, não construção)
+        self.tela.blit(self.superficie_limpa, (0, 0))
+        
         dados_room = self.room_manager.obter_sala()
 
         # Corredor usa tiling + poligonos de parede.

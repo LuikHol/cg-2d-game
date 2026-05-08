@@ -2,8 +2,8 @@
 
 import pygame
 
-from render.primitivas import desenhar_circulo, desenhar_elipse, flood_fill
-from render.preenchimento import scanline_fill, scanline_fill_gradiente
+from render.primitivas import bresenham, desenhar_circulo, desenhar_elipse, flood_fill
+from render.preenchimento import scanline_fill_gradiente
 
 
 class SplashScreen:
@@ -16,6 +16,47 @@ class SplashScreen:
     def desenhar(self, surface):
         self._desenhar_fundo_gradiente(surface)
         self._desenhar_composicao_central(surface)
+
+    def _desenhar_linhas_decorativas(self, surface, cx, cy):
+        # Linhas diagonais para dar mais estrutura ao layout da splash.
+        cor_linha = (95, 125, 180)
+        bresenham(surface, cx - 280, cy - 150, cx - 130, cy - 40, cor_linha)
+        bresenham(surface, cx + 130, cy - 40, cx + 280, cy - 150, cor_linha)
+        bresenham(surface, cx - 280, cy + 150, cx - 130, cy + 40, cor_linha)
+        bresenham(surface, cx + 130, cy + 40, cx + 280, cy + 150, cor_linha)
+
+    def _desenhar_rosto(self, surface, cx, cy):
+        # Estilo solicitado: círculo da cabeça, círculo do cabelo e linhas do rosto.
+        cor_pele_borda = (210, 166, 136)
+        cor_pele_fill = (234, 192, 162)
+        cor_cabelo_borda = (150, 84, 56)
+        cor_cabelo_fill = (184, 110, 78)
+        cor_traco = (54, 46, 60)
+
+        # Cabeça (círculo central).
+        desenhar_circulo(surface, cx, cy, 22, cor_pele_borda)
+        try:
+            flood_fill(surface, cx, cy, cor_pele_fill, cor_pele_borda)
+        except Exception:
+            pass
+
+        # Cabelo (círculo superior sobreposto).
+        cabelo_cx = cx
+        cabelo_cy = cy - 15
+        desenhar_circulo(surface, cabelo_cx, cabelo_cy, 16, cor_cabelo_borda)
+        try:
+            flood_fill(surface, cabelo_cx, cabelo_cy, cor_cabelo_fill, cor_cabelo_borda)
+        except Exception:
+            pass
+
+        # Linhas de rosto: sobrancelhas, olhos, nariz e boca.
+        bresenham(surface, cx - 11, cy - 8, cx - 5, cy - 9, cor_traco)
+        bresenham(surface, cx + 5, cy - 9, cx + 11, cy - 8, cor_traco)
+        bresenham(surface, cx - 9, cy - 3, cx - 5, cy - 3, cor_traco)
+        bresenham(surface, cx + 5, cy - 3, cx + 9, cy - 3, cor_traco)
+        bresenham(surface, cx, cy - 1, cx, cy + 4, cor_traco)
+        bresenham(surface, cx - 7, cy + 10, cx, cy + 12, cor_traco)
+        bresenham(surface, cx, cy + 12, cx + 7, cy + 10, cor_traco)
 
     def _desenhar_fundo_gradiente(self, surface):
         w = surface.get_width()
@@ -36,6 +77,8 @@ class SplashScreen:
         cx = self.width // 2
         cy = self.height // 2
 
+        self._desenhar_linhas_decorativas(surface, cx, cy)
+
         # Elipses decorativas fixas
         desenhar_elipse(surface, cx, cy, 230, 120, (55, 70, 120))
         desenhar_elipse(surface, cx, cy, 165, 82, (88, 110, 160))
@@ -49,9 +92,9 @@ class SplashScreen:
         except Exception:
             pass
 
-        # Triângulo fixo para dar identidade visual
-        tri = [(cx - 80, cy + 95), (cx + 80, cy + 95), (cx, cy - 40)]
-        scanline_fill(surface, tri, (120, 240, 190))
+        self._desenhar_rosto(surface, cx, cy)
+
+        # Triângulo removido para não sobrepor o rosto do personagem.
 
 
 def exibir_splash_screen(width, height, duracao=2.2):
