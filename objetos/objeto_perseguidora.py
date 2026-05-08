@@ -7,7 +7,8 @@ from objetos.componentes import ComponenteColisao, ComponenteRigidbody, resolver
 from render.preenchimento import scanline_fill
 from render.utils_geometrias import pontos_elipse
 from render.viewport import transformar_pontos
-
+from render.superficie import escalar_superficie, espelhar_x
+from render.primitivas import desenhar_circulo
 
 class ObjetoPerseguidora:
     # Inimiga que segue o jogador com colisao e sprite animado.
@@ -162,13 +163,9 @@ class ObjetoPerseguidora:
                 quadro = quadro.subsurface(bounds).copy()
 
             escala = altura_alvo / max(1, quadro.get_height())
-            quadro = pygame.transform.scale(
-                quadro,
-                (
-                    max(1, int(quadro.get_width() * escala)),
-                    max(1, int(quadro.get_height() * escala)),
-                ),
-            )
+            dst_w = max(1, int(quadro.get_width() * escala))
+            dst_h = max(1, int(quadro.get_height() * escala))
+            quadro = escalar_superficie(quadro, dst_w, dst_h)
             quadros_direita.append(quadro)
 
         largura_max = max(q.get_width() for q in quadros_direita)
@@ -185,7 +182,7 @@ class ObjetoPerseguidora:
             )
             padronizados.append(canvas)
 
-        quadros_esquerda = [pygame.transform.flip(quadro, True, False) for quadro in padronizados]
+        quadros_esquerda = [espelhar_x(quadro) for quadro in padronizados]
         return {
             "direita": padronizados,
             "esquerda": quadros_esquerda,
@@ -281,7 +278,7 @@ class ObjetoPerseguidora:
 
         if not self.animacoes:
             sx, sy = transformar_pontos([(self.x, self.y)], camera, viewport)[0]
-            pygame.draw.circle(screen, (55, 25, 35), (sx, sy), self.tamanho)
+            desenhar_circulo(screen, (55, 25, 35), (sx, sy), self.tamanho)
             return
 
         sx, sy = transformar_pontos([(self.x, self.y)], camera, viewport)[0]

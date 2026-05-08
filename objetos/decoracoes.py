@@ -1,8 +1,10 @@
 import math
 import pygame
 
+from render.pixel import setPixel
 from render.sprites_colecionaveis import obter_sprite_colecionavel
 from render.viewport import mundo_para_viewport
+from render.primitivas import desenhar_circulo
 
 def _blit_dentro_da_viewport(surface, sprite, pos, viewport):
     viewport_rect = pygame.Rect(
@@ -15,12 +17,19 @@ def _blit_dentro_da_viewport(surface, sprite, pos, viewport):
     if not sprite_rect.colliderect(viewport_rect):
         return
 
-    old_clip = surface.get_clip()
-    surface.set_clip(viewport_rect)
-    try:
-        surface.blit(sprite, pos)
-    finally:
-        surface.set_clip(old_clip)
+    # Copia sprite pixel a pixel usando setPixel, respeitando transparência
+    sprite_w, sprite_h = sprite.get_size()
+    for y in range(sprite_h):
+        for x in range(sprite_w):
+            pixel = sprite.get_at((x, y))
+            # Só desenha se o pixel tiver alpha > 0
+            if len(pixel) > 3 and pixel[3] > 0:  # Tem canal alpha e não é totalmente transparente
+                screen_x = pos[0] + x
+                screen_y = pos[1] + y
+                # Verifica se está dentro do viewport
+                if (viewport_rect.left <= screen_x < viewport_rect.right and
+                    viewport_rect.top <= screen_y < viewport_rect.bottom):
+                    setPixel(surface, screen_x, screen_y, pixel)
 
 def desenhar_coroa_estatua(surface, camera, viewport, inventario=None):
     # Desenha a coroa vermelha sobre a gata no quarto e some ao ser coletado.
@@ -105,7 +114,7 @@ def desenhar_itens_tapete(surface, camera, viewport):
         raio = int(18 + math.sin(t) * 6)
         alpha = int(180 + math.sin(t * 1.5) * 60)
         glow = pygame.Surface((raio * 2, raio * 2), pygame.SRCALPHA)
-        pygame.draw.circle(glow, (255, 240, 100, max(0, min(255, alpha))), (raio, raio), raio)
+        desenhar_circulo(glow, raio, raio, raio, (255, 240, 100, max(0, min(255, alpha))))
         pos = (sx - raio, sy - raio)
         _blit_dentro_da_viewport(surface, glow, pos, viewport)
 
