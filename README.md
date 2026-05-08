@@ -46,4 +46,7 @@ Inventário: R (Para selecionar os itens no inventário utilize W/S ou as setas)
 
 ### Vídeo demonstrativo do jogo rodando
 
+https://github.com/user-attachments/assets/357f7088-3a07-446e-9eea-af471b956634
+
+
 
