@@ -25,6 +25,41 @@ class SplashScreen:
         bresenham(surface, cx - 280, cy + 150, cx - 130, cy + 40, cor_linha)
         bresenham(surface, cx + 130, cy + 40, cx + 280, cy + 150, cor_linha)
 
+    def _desenhar_coroa(self, surface, cx, cy):
+        """Desenha uma coroa simples com 3 pontas e 1 joia vermelha central."""
+        # Base da coroa (elipse)
+        cor_ouro_borda = (200, 160, 40)
+        cor_ouro_fill = (255, 215, 70)
+        
+        desenhar_elipse(surface, cx, cy, 50, 20, cor_ouro_borda)
+        try:
+            flood_fill(surface, cx, cy, cor_ouro_fill, cor_ouro_borda)
+        except Exception:
+            pass
+        
+        # 3 Triângulos (pontas) usando bresenham
+        # Ponta esquerda
+        bresenham(surface, cx - 30, cy - 5, cx - 50, cy - 50, (200, 160, 40))
+        bresenham(surface, cx - 50, cy - 50, cx - 10, cy - 5, (200, 160, 40))
+        
+        # Ponta central (mais alta)
+        bresenham(surface, cx - 10, cy - 5, cx, cy - 70, (200, 160, 40))
+        bresenham(surface, cx, cy - 70, cx + 10, cy - 5, (200, 160, 40))
+        
+        # Ponta direita
+        bresenham(surface, cx + 10, cy - 5, cx + 50, cy - 50, (200, 160, 40))
+        bresenham(surface, cx + 50, cy - 50, cx + 30, cy - 5, (200, 160, 40))
+        
+        # Joia vermelha única no topo central
+        cor_joia_borda = (200, 80, 80)
+        cor_joia_fill = (220, 50, 50)
+        
+        desenhar_circulo(surface, cx, cy - 70, 12, cor_joia_borda)
+        try:
+            flood_fill(surface, cx, cy - 70, cor_joia_fill, cor_joia_borda)
+        except Exception:
+            pass
+
     def _desenhar_rosto(self, surface, cx, cy):
         # Estilo solicitado: círculo da cabeça, círculo do cabelo e linhas do rosto.
         cor_pele_borda = (210, 166, 136)
@@ -66,10 +101,10 @@ class SplashScreen:
 
         pontos = [(0, 0), (w - 1, 0), (w - 1, h - 1), (0, h - 1)]
         cores = [
-            (10, 12, 22),
-            (28, 18, 48),
-            (18, 24, 38),
-            (8, 12, 20),
+            (60, 80, 150),      # top-left: azul noturno claro
+            (120, 40, 140),     # top-right: roxo vibrante
+            (60, 30, 100),      # bottom-right: roxo escuro
+            (25, 35, 80),       # bottom-left: azul noturno escuro
         ]
         scanline_fill_gradiente(surface, pontos, cores)
 
@@ -92,9 +127,8 @@ class SplashScreen:
         except Exception:
             pass
 
-        self._desenhar_rosto(surface, cx, cy)
-
-        # Triângulo removido para não sobrepor o rosto do personagem.
+        # Desenha coroa central
+        self._desenhar_coroa(surface, cx, cy)
 
 
 def exibir_splash_screen(width, height, duracao=2.2):
