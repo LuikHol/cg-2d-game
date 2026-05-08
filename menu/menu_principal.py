@@ -19,6 +19,7 @@ from configs.config_menu import (
 )
 from render.pixel import setPixel
 from render.preenchimento import scanline_fill
+from render.superficie import escalar_superficie, espelhar_x
 
 ANIMACOES_MENU = None
 CACHE_COROAS = {}
@@ -84,12 +85,10 @@ def carregar_quadros_da_faixa(caminho_imagem, altura_alvo):
 
     quadros = []
     for recorte in recortes:
-        quadro_escalado = pygame.transform.scale(
+        quadro_escalado = escalar_superficie(
             recorte,
-            (
-                max(1, int(recorte.get_width() * escala)),
-                max(1, int(recorte.get_height() * escala)),
-            ),
+            max(1, int(recorte.get_width() * escala)),
+            max(1, int(recorte.get_height() * escala)),
         )
         canvas = pygame.Surface((largura_canvas_alvo, altura_canvas_alvo), pygame.SRCALPHA)
         pos_x = (largura_canvas_alvo - quadro_escalado.get_width()) // 2
@@ -135,7 +134,7 @@ def obter_animacoes_menu():
         quadros_baixo = carregar_quadros_da_faixa(faixa_baixo, altura_alvo)
         quadros_direita = carregar_quadros_da_faixa(faixa_lado, altura_alvo)
         quadros_cima = carregar_quadros_da_faixa(faixa_cima, altura_alvo)
-        quadros_esquerda = [pygame.transform.flip(q, True, False) for q in quadros_direita]
+        quadros_esquerda = [espelhar_x(q) for q in quadros_direita]
 
         quadros_baixo, quadros_cima, quadros_direita, quadros_esquerda = normalizar_animacoes(
             quadros_baixo,
