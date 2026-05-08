@@ -7,7 +7,9 @@ VOLUME_MUSICA = 0.5
 MUSICA_POR_SALA = {
     "sala_1": "dorminho2.mp3",
     "sala_2": "dorminhogrande.mp3",
+    "corredor":"dorminho2.mp3",
     "quarto_dia": "dorminho2.mp3",
+    "creditos": "feliz.mp3",
 }
 
 LARGURA_MUNDO = 1000

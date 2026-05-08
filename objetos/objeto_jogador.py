@@ -221,7 +221,12 @@ class ObjetoJogador:
             canvas = pygame.Surface((largura_canvas_alvo, altura_canvas_alvo), pygame.SRCALPHA)
             x = (largura_canvas_alvo - quadro_escalado.get_width()) // 2
             y = altura_canvas_alvo - quadro_escalado.get_height()
-            canvas.blit(quadro_escalado, (x, y))
+            qw, qh = quadro_escalado.get_size()
+            for qy in range(qh):
+                for qx in range(qw):
+                    pixel = quadro_escalado.get_at((qx, qy))
+                    if pixel[3] > 0:
+                        setPixel(canvas, x + qx, y + qy, pixel)
             quadros.append(canvas)
         return quadros
 
@@ -265,8 +270,13 @@ class ObjetoJogador:
             for quadro in grupo:
                 w, h = quadro.get_size()
                 canvas = pygame.Surface((largura_maxima, altura_maxima), pygame.SRCALPHA)
-                # Centraliza em x e ancora no pe (base do sprite).
-                canvas.blit(quadro, ((largura_maxima - w) // 2, altura_maxima - h))
+                ox = (largura_maxima - w) // 2
+                oy = altura_maxima - h
+                for qy in range(h):
+                    for qx in range(w):
+                        pixel = quadro.get_at((qx, qy))
+                        if pixel[3] > 0:
+                            setPixel(canvas, ox + qx, oy + qy, pixel)
                 saida.append(canvas)
             return saida
 
